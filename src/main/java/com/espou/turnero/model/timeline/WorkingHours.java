@@ -1,4 +1,4 @@
-package com.espou.turnero.model;
+package com.espou.turnero.model.timeline;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

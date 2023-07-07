@@ -1,6 +1,7 @@
 package com.espou.turnero.model;
 
 
+import com.espou.turnero.model.timeline.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -1,5 +1,8 @@
 package com.espou.turnero.model;
 
+import com.espou.turnero.model.timeline.AdditionalHours;
+import com.espou.turnero.model.timeline.OperationHours;
+import com.espou.turnero.model.timeline.RestrictedHours;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
