@@ -22,4 +22,7 @@ public class MeetDTO {
     private LocalDate date;
     private LocalTime hour;
     private Integer duration;
+    public LocalTime getEndTime() {
+        return hour.plusMinutes(duration);
+    }
 }
