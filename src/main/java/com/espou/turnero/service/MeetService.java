@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
+
 
 @Service
 public class MeetService {
@@ -26,39 +26,35 @@ public class MeetService {
         String resourceId = meetDTO.getResource().getId();
         String providerId = meetDTO.getProvider().getId();
 
-        // Check if the meet is within the resource's timeline
-        boolean isResourceInRange = isMeetOnRange(meetDTO, ResourceType.RESOURCE, resourceId);
-        if (!isResourceInRange) {
-            return Mono.error(new IllegalArgumentException("Meet is outside the resource's timeline."));
-        }
+        return resourceService.getTimelineById(resourceId)
+                .flatMap(resourceTimeline -> providerService.getTimelineById(providerId)
+                        .flatMap(providerTimeline -> {
+                            boolean isResourceInRange = isMeetOnRange(meetDTO, resourceTimeline);
+                            boolean isProviderInRange = isMeetOnRange(meetDTO, providerTimeline);
 
-        // Check if the meet is within the provider's timeline
-        boolean isProviderInRange = isMeetOnRange(meetDTO, ResourceType.PROVIDER, providerId);
-        if (!isProviderInRange) {
-            return Mono.error(new IllegalArgumentException("Meet is outside the provider's timeline."));
-        }
+                            if (!isResourceInRange) {
+                                return Mono.error(new IllegalArgumentException("Meet is outside the resource's timeline."));
+                            }
 
-        // Check for overlapping meets
-        return getOverlappingMeets(resourceId, providerId, meetDTO.getDate(), meetDTO.getHour(), meetDTO.getEndTime())
-                .collectList()
-                .flatMap(existingMeets -> {
-                    if (existingMeets.isEmpty()) {
-                        return meetRepository.save(meetDTO);
-                    } else {
-                        return Mono.error(new IllegalArgumentException("Meet overlaps with existing meets."));
-                    }
-                });
+                            if (!isProviderInRange) {
+                                return Mono.error(new IllegalArgumentException("Meet is outside the provider's timeline."));
+                            }
+
+                            return getOverlappingMeets(resourceId, providerId, meetDTO.getDate(), meetDTO.getHour(), meetDTO.getEndTime())
+                                    .collectList()
+                                    .flatMap(existingMeets -> {
+                                        if (existingMeets.isEmpty()) {
+                                            return meetRepository.save(meetDTO);
+                                        } else {
+                                            return Mono.error(new IllegalArgumentException("Meet overlaps with existing meets."));
+                                        }
+                                    });
+                        })
+                );
     }
 
-    private boolean isMeetOnRange(MeetDTO meetDTO, ResourceType type, String id) {
-        TimeLine timeline = getTimelineById(id, type);
+    private boolean isMeetOnRange(MeetDTO meetDTO, TimeLine timeline) {
         return timeline.isMeetOnRange(meetDTO);
-    }
-
-    private TimeLine getTimelineById(String id, ResourceType type) {
-        // Retrieve the timeline based on the ID and type
-        // Replace this with the actual implementation to fetch the timeline
-        return (type == ResourceType.RESOURCE) ? resourceService.getTimelineById(id) : providerService.getTimelineById(id);
     }
 
     private Flux<MeetDTO> getOverlappingMeets(String resourceId, String providerId, LocalDate date, LocalTime startTime, LocalTime endTime) {
@@ -69,10 +65,32 @@ public class MeetService {
                 );
     }
 
-    // Add more service methods as needed
-}
+    public Mono<MeetDTO> getMeetById(String id) {
+        return meetRepository.findById(id);
+    }
 
-enum ResourceType {
-    RESOURCE,
-    PROVIDER
+    public Mono<MeetDTO> updateMeet(String id, MeetDTO meetDTO) {
+        return meetRepository.findById(id)
+                .flatMap(existingMeet -> {
+                    existingMeet.setResource(meetDTO.getResource());
+                    existingMeet.setProvider(meetDTO.getProvider());
+                    existingMeet.setReceiver(meetDTO.getReceiver());
+                    existingMeet.setTask(meetDTO.getTask());
+                    existingMeet.setDate(meetDTO.getDate());
+                    existingMeet.setHour(meetDTO.getHour());
+                    existingMeet.setDuration(meetDTO.getDuration());
+                    return meetRepository.save(existingMeet);
+                });
+    }
+
+    public Mono<Void> deleteMeet(String id) {
+        return meetRepository.deleteById(id);
+    }
+    public Flux<MeetDTO> getMeetsByResource(String resourceId) {
+        return meetRepository.findByResource_Id(resourceId);
+    }
+
+    public Flux<MeetDTO> getMeetsByProvider(String providerId) {
+        return meetRepository.findByProvider_Id(providerId);
+    }
 }

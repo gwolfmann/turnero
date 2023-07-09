@@ -26,5 +26,18 @@ public class MeetRepository {
         return mongoTemplate.find(query, MeetDTO.class);
     }
 
+    public Mono<Void> deleteById(String id) {
+        return mongoTemplate.remove(Query.query(Criteria.where("_id").is(id)), MeetDTO.class)
+                .then();
+    }
+    public Flux<MeetDTO> findByResource_Id(String resourceId) {
+        Query query = Query.query(Criteria.where("resource.id").is(resourceId));
+        return mongoTemplate.find(query, MeetDTO.class);
+    }
+
+    public Flux<MeetDTO> findByProvider_Id(String providerId) {
+        Query query = Query.query(Criteria.where("provider.id").is(providerId));
+        return mongoTemplate.find(query, MeetDTO.class);
+    }
     // Add more repository methods as needed
 }
