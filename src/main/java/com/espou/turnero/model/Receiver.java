@@ -10,4 +10,6 @@ public class Receiver {
     private String name;
     private String affiliation;
     private Integer identification;
+    private String internalId; // Internal ID
+
 }

@@ -5,7 +5,8 @@ public class ReceiverMapper {
                 receiver.getId(),
                 receiver.getName(),
                 receiver.getAffiliation(),
-                receiver.getIdentification()
+                receiver.getIdentification(),
+                receiver.getInternalId()
         );
     }
 
@@ -14,7 +15,8 @@ public class ReceiverMapper {
                 receiverDto.getId(),
                 receiverDto.getName(),
                 receiverDto.getAffiliation(),
-                receiverDto.getIdentification()
+                receiverDto.getIdentification(),
+                receiverDto.getInternalId()
         );
     }
 }
