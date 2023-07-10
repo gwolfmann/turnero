@@ -1,4 +1,5 @@
 package com.espou.turnero.service;
+
 import com.espou.turnero.model.TimeLine;
 import com.espou.turnero.storage.ResourceDTO;
 import com.espou.turnero.storage.ResourceRepository;
@@ -42,7 +43,6 @@ public class ResourceService {
         return resourceRepository.updateById(id, resourceDTO);
     }
 
-
     public Mono<ResourceDTO> updateResourceByInternalId(String internalId, ResourceDTO resourceDTO) {
         return resourceRepository.findByInternalId(internalId)
                 .switchIfEmpty(Mono.error(new NoSuchElementException(internalId+" resource not found")))
@@ -54,7 +54,6 @@ public class ResourceService {
     public Mono<Void> deleteResource(String id) {
         return resourceRepository.deleteById(id);
     }
-
 
     public Mono<Void> deleteResourceByInternalId(String internalId) {
         return resourceRepository.deleteByInternalId(internalId);
