@@ -4,6 +4,7 @@ import com.espou.turnero.model.TimeLine;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
@@ -14,5 +15,6 @@ public class ResourceDTO {
     private String id;
     private String name;
     private TimeLine timeline;
+    @Indexed(unique = true)
     private String internalId;
 }

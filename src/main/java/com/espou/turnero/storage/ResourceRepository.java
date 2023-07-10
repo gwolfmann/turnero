@@ -1,5 +1,6 @@
 package com.espou.turnero.storage;
 
+import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -40,4 +41,11 @@ public class ResourceRepository {
         return mongoTemplate.remove(Query.query(Criteria.where("internalId").is(internalId)), ResourceDTO.class)
                 .then();
     }
+
+    public Mono<ResourceDTO> updateById(String id, ResourceDTO updatedResource) {
+        return mongoTemplate.findAndReplace(Query.query(Criteria.where("_id").is(id)), updatedResource)
+                .flatMap(result -> Mono.just(updatedResource))
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Resource not found")));
+    }
+
 }

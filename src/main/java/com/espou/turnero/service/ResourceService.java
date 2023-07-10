@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.NoSuchElementException;
+
 @Service
 public class ResourceService {
     private final ResourceRepository resourceRepository;
@@ -37,22 +39,16 @@ public class ResourceService {
     }
 
     public Mono<ResourceDTO> updateResource(String id, ResourceDTO resourceDTO) {
-        return resourceRepository.findById(id)
-                .flatMap(existingResource -> {
-                    existingResource.setName(resourceDTO.getName());
-                    existingResource.setInternalId(resourceDTO.getInternalId());
-                    existingResource.setTimeline(resourceDTO.getTimeline());
-                    return resourceRepository.save(existingResource);
-                });
+        return resourceRepository.updateById(id, resourceDTO);
     }
+
 
     public Mono<ResourceDTO> updateResourceByInternalId(String internalId, ResourceDTO resourceDTO) {
         return resourceRepository.findByInternalId(internalId)
+                .switchIfEmpty(Mono.error(new NoSuchElementException(internalId+" resource not found")))
                 .flatMap(existingResource -> {
-                    existingResource.setName(resourceDTO.getName());
-                    existingResource.setInternalId(resourceDTO.getInternalId());
-                    existingResource.setTimeline(resourceDTO.getTimeline());
-                    return resourceRepository.save(existingResource);
+                    resourceDTO.setId(existingResource.getId());
+                    return resourceRepository.updateById(existingResource.getId(),resourceDTO);
                 });
     }
     public Mono<Void> deleteResource(String id) {
