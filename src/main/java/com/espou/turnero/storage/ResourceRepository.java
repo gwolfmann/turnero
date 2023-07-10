@@ -23,6 +23,10 @@ public class ResourceRepository {
         return mongoTemplate.findById(id, ResourceDTO.class);
     }
 
+    public Mono<ResourceDTO> findByInternalId(String internalId) {
+        return mongoTemplate.findOne(Query.query(Criteria.where("internalId").is(internalId)), ResourceDTO.class);
+    }
+
     public Flux<ResourceDTO> findAll() {
         return mongoTemplate.findAll(ResourceDTO.class);
     }
@@ -32,5 +36,8 @@ public class ResourceRepository {
                 .then();
     }
 
-    // Add more custom repository methods as needed
+    public Mono<Void> deleteByInternalId(String internalId) {
+        return mongoTemplate.remove(Query.query(Criteria.where("internalId").is(internalId)), ResourceDTO.class)
+                .then();
+    }
 }

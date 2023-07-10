@@ -14,4 +14,5 @@ public class ResourceDTO {
     private String id;
     private String name;
     private TimeLine timeline;
+    private String internalId;
 }

@@ -21,9 +21,15 @@ public class ResourceService {
     public Mono<ResourceDTO> getResourceById(String id) {
         return resourceRepository.findById(id);
     }
+    public Mono<ResourceDTO> getResourceByInternalId(String internalId) {
+        return resourceRepository.findByInternalId(internalId);
+    }
 
     public Mono<TimeLine> getTimelineById(String id) {
         return  this.getResourceById(id).map(ResourceDTO::getTimeline);
+    }
+    public Mono<TimeLine> getTimelineByInternalId(String internalId) {
+        return resourceRepository.findByInternalId(internalId).map(ResourceDTO::getTimeline);
     }
 
     public Mono<ResourceDTO> createResource(ResourceDTO resourceDTO) {
@@ -34,11 +40,27 @@ public class ResourceService {
         return resourceRepository.findById(id)
                 .flatMap(existingResource -> {
                     existingResource.setName(resourceDTO.getName());
+                    existingResource.setInternalId(resourceDTO.getInternalId());
+                    existingResource.setTimeline(resourceDTO.getTimeline());
                     return resourceRepository.save(existingResource);
                 });
     }
 
+    public Mono<ResourceDTO> updateResourceByInternalId(String internalId, ResourceDTO resourceDTO) {
+        return resourceRepository.findByInternalId(internalId)
+                .flatMap(existingResource -> {
+                    existingResource.setName(resourceDTO.getName());
+                    existingResource.setInternalId(resourceDTO.getInternalId());
+                    existingResource.setTimeline(resourceDTO.getTimeline());
+                    return resourceRepository.save(existingResource);
+                });
+    }
     public Mono<Void> deleteResource(String id) {
         return resourceRepository.deleteById(id);
+    }
+
+
+    public Mono<Void> deleteResourceByInternalId(String internalId) {
+        return resourceRepository.deleteByInternalId(internalId);
     }
 }

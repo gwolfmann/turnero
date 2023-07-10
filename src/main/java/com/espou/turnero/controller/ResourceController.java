@@ -30,7 +30,7 @@ public class ResourceController {
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResourceDTO> getResourceById(@PathVariable String id) {
         logger.info("Received GET request for resource with ID: {}", id);
-        return resourceService.getResourceById(id);
+        return resourceService.getResourceByInternalId(id);
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -43,12 +43,30 @@ public class ResourceController {
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResourceDTO> updateResource(@PathVariable String id, @RequestBody ResourceDTO resourceDTO) {
         logger.info("Received PUT request to update resource with ID: {}", id);
-        return resourceService.updateResource(id, resourceDTO);
+        return resourceService.updateResourceByInternalId(id, resourceDTO);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> deleteResource(@PathVariable String id) {
+        logger.info("Received DELETE request for resource with ID: {}", id);
+        return resourceService.deleteResourceByInternalId(id);
+    }
+    @GetMapping(value = "/byMongoId/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResourceDTO> getResourceByMongoId(@PathVariable String id) {
+        logger.info("Received GET request for resource with ID: {}", id);
+        return resourceService.getResourceById(id);
+    }
+
+    @PutMapping(value = "/byMongoId/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ResourceDTO> updateResourceByMongoId(@PathVariable String id, @RequestBody ResourceDTO resourceDTO) {
+        logger.info("Received PUT request to update resource with ID: {}", id);
+        return resourceService.updateResource(id, resourceDTO);
+    }
+
+    @DeleteMapping("/byMongoId/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> deleteResourceByMongoId(@PathVariable String id) {
         logger.info("Received DELETE request for resource with ID: {}", id);
         return resourceService.deleteResource(id);
     }
