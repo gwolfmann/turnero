@@ -5,6 +5,9 @@ import com.espou.turnero.storage.ProviderRepository;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.NoSuchElementException;
+
 @Service
 public class ProviderService {
     private final ProviderRepository providerRepository;
@@ -42,6 +45,7 @@ public class ProviderService {
 
     public Mono<ProviderDTO> updateProviderByInternalId(String internalId, ProviderDTO providerDTO) {
         return providerRepository.findByInternalId(internalId)
+                .switchIfEmpty(Mono.error(new NoSuchElementException(internalId + " Provider not found")))
                 .flatMap(existingProvider -> {
                     providerDTO.setId(existingProvider.getId());
                     return providerRepository.save(providerDTO);

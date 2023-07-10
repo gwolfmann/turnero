@@ -1,5 +1,5 @@
 package com.espou.turnero.service;
-import com.espou.turnero.model.TimeLine;
+
 import com.espou.turnero.storage.ReceiverDTO;
 import com.espou.turnero.storage.ReceiverRepository;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,6 @@ public class ReceiverService {
     public Mono<ReceiverDTO> updateReceiver(String id, ReceiverDTO ReceiverDTO) {
         return ReceiverRepository.updateById(id, ReceiverDTO);
     }
-
 
     public Mono<ReceiverDTO> updateReceiverByInternalId(String internalId, ReceiverDTO ReceiverDTO) {
         return ReceiverRepository.findByInternalId(internalId)
