@@ -9,7 +9,8 @@ public class ProviderMapper {
                 provider.getName(),
                 provider.getTimeline(),
                 provider.getDefaultResource(),
-                provider.getDefaultTask()
+                provider.getDefaultTask(),
+                provider.getInternalId()
         );
     }
 
@@ -19,7 +20,8 @@ public class ProviderMapper {
                 providerDto.getName(),
                 providerDto.getTimeline(),
                 providerDto.getDefaultResource(),
-                providerDto.getDefaultTask()
+                providerDto.getDefaultTask(),
+                providerDto.getInternalId()
         );
     }
 }

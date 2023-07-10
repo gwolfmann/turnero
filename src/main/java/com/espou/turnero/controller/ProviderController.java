@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 @RestController
 @RequestMapping("/providers")
 public class ProviderController {
@@ -30,7 +31,7 @@ public class ProviderController {
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ProviderDTO> getProviderById(@PathVariable String id) {
         logger.info("Received GET request for provider with ID: {}", id);
-        return providerService.getProviderById(id);
+        return providerService.getProviderByInternalId(id);
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -43,12 +44,31 @@ public class ProviderController {
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ProviderDTO> updateProvider(@PathVariable String id, @RequestBody ProviderDTO providerDTO) {
         logger.info("Received PUT request to update provider with ID: {}", id);
-        return providerService.updateProvider(id, providerDTO);
+        return providerService.updateProviderByInternalId(id, providerDTO);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> deleteProvider(@PathVariable String id) {
+        logger.info("Received DELETE request for provider with ID: {}", id);
+        return providerService.deleteProviderByInternalId(id);
+    }
+
+    @GetMapping(value = "/byMongoId/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ProviderDTO> getProviderByMongoId(@PathVariable String id) {
+        logger.info("Received GET request for provider with ID: {}", id);
+        return providerService.getProviderById(id);
+    }
+
+    @PutMapping(value = "/byMongoId/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<ProviderDTO> updateProviderByMongoId(@PathVariable String id, @RequestBody ProviderDTO providerDTO) {
+        logger.info("Received PUT request to update provider with ID: {}", id);
+        return providerService.updateProvider(id, providerDTO);
+    }
+
+    @DeleteMapping("/byMongoId/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> deleteProviderByMongoId(@PathVariable String id) {
         logger.info("Received DELETE request for provider with ID: {}", id);
         return providerService.deleteProvider(id);
     }

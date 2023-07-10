@@ -3,6 +3,7 @@ package com.espou.turnero.storage;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
@@ -13,4 +14,6 @@ public class TaskDTO {
     private String id;
     private String name;
     private Integer duration;
+    @Indexed(unique = true)
+    private String internalId; // Internal ID
 }

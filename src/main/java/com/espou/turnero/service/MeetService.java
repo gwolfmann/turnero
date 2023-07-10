@@ -2,6 +2,7 @@ package com.espou.turnero.service;
 import com.espou.turnero.model.TimeLine;
 import com.espou.turnero.storage.MeetDTO;
 import com.espou.turnero.storage.MeetRepository;
+import com.espou.turnero.storage.ProviderDTO;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -27,7 +28,8 @@ public class MeetService {
         String providerId = meetDTO.getProvider().getId();
 
         return resourceService.getTimelineById(resourceId)
-                .flatMap(resourceTimeline -> providerService.getTimelineById(providerId)
+                .flatMap(resourceTimeline -> providerService.getProviderById(providerId)
+                        .map(ProviderDTO::getTimeline)
                         .flatMap(providerTimeline -> {
                             boolean isResourceInRange = isMeetOnRange(meetDTO, resourceTimeline);
                             boolean isProviderInRange = isMeetOnRange(meetDTO, providerTimeline);

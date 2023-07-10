@@ -1,6 +1,7 @@
 package com.espou.turnero.storage;
 
 
+import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -24,6 +25,10 @@ public class ProviderRepository {
         return mongoTemplate.findById(id, ProviderDTO.class);
     }
 
+    public Mono<ProviderDTO> findByInternalId(String internalId) {
+        return mongoTemplate.findOne(Query.query(Criteria.where("internalId").is(internalId)), ProviderDTO.class);
+    }
+
     public Flux<ProviderDTO> findAll() {
         return mongoTemplate.findAll(ProviderDTO.class);
     }
@@ -33,4 +38,14 @@ public class ProviderRepository {
                 .then();
     }
 
+    public Mono<Void> deleteByInternalId(String internalId) {
+        return findByInternalId(internalId)
+                .flatMap(provider -> deleteById(provider.getId()));
+    }
+
+    public Mono<ProviderDTO> updateById(String id, ProviderDTO updatedProvider) {
+        return mongoTemplate.findAndReplace(Query.query(Criteria.where("_id").is(id)), updatedProvider)
+                .flatMap(result -> Mono.just(updatedProvider))
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Provider not found")));
+    }
 }

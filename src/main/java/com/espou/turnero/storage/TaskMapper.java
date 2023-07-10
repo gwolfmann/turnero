@@ -4,10 +4,10 @@ import com.espou.turnero.model.Task;
 
 public class TaskMapper {
     public static TaskDTO toDto(Task task) {
-        return new TaskDTO(task.getId(), task.getName(), task.getDuration());
+        return new TaskDTO(task.getId(), task.getName(), task.getDuration(), task.getInternalId());
     }
 
     public static Task toEntity(TaskDTO taskDto) {
-        return new Task(taskDto.getId(), taskDto.getName(), taskDto.getDuration());
+        return new Task(taskDto.getId(), taskDto.getName(), taskDto.getDuration(), taskDto.getInternalId());
     }
 }

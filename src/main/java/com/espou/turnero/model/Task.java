@@ -9,4 +9,5 @@ public class Task {
     private String id;
     private String name;
     private Integer duration;
+    private String internalId; // Internal ID
 }

@@ -1,12 +1,10 @@
 package com.espou.turnero.service;
 
-import com.espou.turnero.model.TimeLine;
 import com.espou.turnero.storage.ProviderDTO;
 import com.espou.turnero.storage.ProviderRepository;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
 @Service
 public class ProviderService {
     private final ProviderRepository providerRepository;
@@ -23,8 +21,8 @@ public class ProviderService {
         return providerRepository.findById(id);
     }
 
-    public Mono<TimeLine> getTimelineById(String id) {
-        return  this.getProviderById(id).map(ProviderDTO::getTimeline);
+    public Mono<ProviderDTO> getProviderByInternalId(String internalId) {
+        return providerRepository.findByInternalId(internalId);
     }
 
     public Mono<ProviderDTO> createProvider(ProviderDTO providerDTO) {
@@ -35,11 +33,29 @@ public class ProviderService {
         return providerRepository.findById(id)
                 .flatMap(existingProvider -> {
                     existingProvider.setName(providerDTO.getName());
+                    existingProvider.setTimeline(providerDTO.getTimeline());
+                    existingProvider.setDefaultResource(providerDTO.getDefaultResource());
+                    existingProvider.setDefaultTask(providerDTO.getDefaultTask());
                     return providerRepository.save(existingProvider);
+                });
+    }
+
+    public Mono<ProviderDTO> updateProviderByInternalId(String internalId, ProviderDTO providerDTO) {
+        return providerRepository.findByInternalId(internalId)
+                .flatMap(existingProvider -> {
+                    providerDTO.setId(existingProvider.getId());
+                    return providerRepository.save(providerDTO);
                 });
     }
 
     public Mono<Void> deleteProvider(String id) {
         return providerRepository.deleteById(id);
     }
+
+    public Mono<Void> deleteProviderByInternalId(String internalId) {
+        return providerRepository.findByInternalId(internalId)
+                .flatMap(provider -> providerRepository.deleteById(provider.getId()));
+    }
 }
+
+
