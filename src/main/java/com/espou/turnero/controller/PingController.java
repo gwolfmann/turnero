@@ -1,5 +1,6 @@
 package com.espou.turnero.controller;
 
+import com.espou.turnero.model.Ping;
 import com.espou.turnero.processor.Pipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,20 +15,20 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 @RequestMapping("/ping")
 public class PingController {
 
-    private final Pipeline<String,String,String> pipeline;
+    private final Pipeline<Ping,Ping,Ping> pipeline;
     private final Logger logger = LoggerFactory.getLogger(PingController.class);
 
     public PingController() {
-        this.pipeline = Pipeline.<String,String,String>builder()
+        this.pipeline = Pipeline.<Ping,Ping,Ping>builder()
             .validateRequest(Pipeline::noOp)
             .validateBody(Pipeline::noOp)
-            .storageOp(x ->  Mono.just("Pong"))
+            .storageOp(x ->  Mono.just(new Ping("pong")))
             .boProcessor(Pipeline::noOp)
-            .presenter(x -> Mono.just(Pipeline.responseAsJson(x)))
+            .presenter(Pipeline::noOp)
             .handleErrorResponse(Mono::error)
             .build();
     }
-    //@RequestMapping("/")
+
     public Mono<ServerResponse> ping(ServerRequest serverRequest) {
         logger.info("Received GET request for ping");
         return pipeline.executeToServerResponse(serverRequest);

@@ -1,9 +1,10 @@
 package com.espou.turnero.processor;
 
+import com.espou.turnero.response.CustomResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
@@ -14,6 +15,7 @@ import java.util.function.Function;
 public class Pipeline<RAW,BO,DTO> {
 
     public static <BO> Mono<BO> noOp(BO bo) {return Mono.just(bo);}
+/*
     public static String responseAsJson(String s) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -24,7 +26,7 @@ public class Pipeline<RAW,BO,DTO> {
         }
         return s;
     }
-
+ */
     protected final Function<ServerRequest, Mono<ServerRequest>> validateRequest;
     protected final Function<ServerRequest, Mono<ServerRequest>> validateBody;
     protected final Function<ServerRequest, Mono<RAW>> storageOp;
@@ -42,10 +44,15 @@ public class Pipeline<RAW,BO,DTO> {
                 .onErrorResume(handleErrorResponse);
     }
 
-    public Mono<ServerResponse> executeToServerResponse(ServerRequest serverRequest){
+    public <DTO> Mono<ServerResponse> executeToServerResponse(ServerRequest serverRequest){
         return execute(serverRequest)
-                .flatMap(dto ->
-                ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(dto));
+                .map(dto -> CustomResponse.<DTO>builder()
+                    .data((DTO) dto)
+                    .httpStatus(HttpStatus.OK)
+                    .requestPath(serverRequest.requestPath().toString())
+                    .className(dto.getClass().getSimpleName())
+                    .build())
+                .flatMap(x -> ServerResponse.ok().bodyValue(x));
     }
 
 }

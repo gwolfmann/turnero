@@ -5,11 +5,12 @@ import com.espou.turnero.storage.ResourceDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
+import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 @RestController
 @RequestMapping("/resources")
@@ -21,10 +22,13 @@ public class ResourceController {
         this.resourceService = resourceService;
     }
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public Flux<ResourceDTO> getAllResources() {
+
+    public Mono<ServerResponse> getAllResources() {
         logger.info("Received GET request for all resources");
-        return resourceService.getAllResources();
+        return resourceService.getAllResources()
+                .collectList()
+                .flatMap(x -> ServerResponse.ok().bodyValue(x));
+
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
