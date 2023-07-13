@@ -16,11 +16,10 @@ public class RouterConfig {
     RouterFunction<ServerResponse> pingRoutes(PingController pingController) {
         return RouterFunctions.route(GET("/ping").and(accept(MediaType.APPLICATION_JSON)), pingController::ping);
     }
-/*
+
     @Bean
     RouterFunction<ServerResponse> resourceRoutes(ResourceController resourceController) {
         return RouterFunctions.route(GET("/resources").and(accept(MediaType.APPLICATION_JSON)), resourceController::getAllResources);
     }
 
- */
 }

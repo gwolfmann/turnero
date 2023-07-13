@@ -1,20 +1,26 @@
 package com.espou.turnero.storage;
 
+import com.espou.turnero.MongoReactiveApplication;
+import lombok.NoArgsConstructor;
 import org.apache.kafka.common.errors.ResourceNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@Repository
+@Component
 public class ResourceRepository {
-    private final ReactiveMongoTemplate mongoTemplate;
+    @Autowired
+    private ReactiveMongoTemplate mongoTemplate = MongoReactiveApplication.g;
 
-    public ResourceRepository(ReactiveMongoTemplate mongoTemplate) {
-        this.mongoTemplate = mongoTemplate;
-    }
+//    public ResourceRepository(ReactiveMongoTemplate mongoTemplate) {
+//        this.mongoTemplate = mongoTemplate;
+//    }
 
     public Mono<ResourceDTO> save(ResourceDTO resource) {
         return mongoTemplate.save(resource);

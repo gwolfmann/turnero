@@ -3,6 +3,9 @@ package com.espou.turnero.service;
 import com.espou.turnero.model.TimeLine;
 import com.espou.turnero.storage.ResourceDTO;
 import com.espou.turnero.storage.ResourceRepository;
+import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -11,11 +14,16 @@ import java.util.NoSuchElementException;
 
 @Service
 public class ResourceService {
-    private final ResourceRepository resourceRepository;
 
-    public ResourceService(ResourceRepository resourceRepository) {
-        this.resourceRepository = resourceRepository;
+    @Autowired
+    private ResourceRepository resourceRepository;
+
+
+    //public ResourceService(ResourceRepository resourceRepository) {
+    public ResourceService() {
+        this.resourceRepository = new ResourceRepository();
     }
+
 
     public Flux<ResourceDTO> getAllResources() {
         return resourceRepository.findAll();
