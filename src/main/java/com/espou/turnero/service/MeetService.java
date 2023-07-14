@@ -14,12 +14,12 @@ import java.time.LocalTime;
 @Service
 public class MeetService {
     private final MeetRepository meetRepository;
-    private final ResourceService resourceService;
+    private final ResourceServiceOld resourceServiceOld;
     private final ProviderService providerService;
 
-    public MeetService(MeetRepository meetRepository, ResourceService resourceService, ProviderService providerService) {
+    public MeetService(MeetRepository meetRepository, ResourceServiceOld resourceServiceOld, ProviderService providerService) {
         this.meetRepository = meetRepository;
-        this.resourceService = resourceService;
+        this.resourceServiceOld = resourceServiceOld;
         this.providerService = providerService;
     }
 
@@ -27,7 +27,7 @@ public class MeetService {
         String resourceId = meetDTO.getResource().getId();
         String providerId = meetDTO.getProvider().getId();
 
-        return resourceService.getTimelineById(resourceId)
+        return resourceServiceOld.getTimelineById(resourceId)
             .flatMap(resourceTimeline -> providerService.getProviderById(providerId)
                 .map(ProviderDTO::getTimeline)
                 .flatMap(providerTimeline -> {

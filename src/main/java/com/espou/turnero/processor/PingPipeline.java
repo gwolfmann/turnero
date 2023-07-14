@@ -2,7 +2,8 @@ package com.espou.turnero.processor;
 
 import com.espou.turnero.model.Ping;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
@@ -11,6 +12,7 @@ import reactor.core.publisher.Mono;
 public class PingPipeline {
 
     private final Pipeline<Ping,Ping,Ping> pipeline;
+    private final Logger logger = LoggerFactory.getLogger(PingPipeline.class);
 
     public PingPipeline(){
         pipeline = Pipeline.<Ping,Ping,Ping>builder()
@@ -24,6 +26,7 @@ public class PingPipeline {
     }
 
     public Mono<ServerResponse> executeToServerResponse(ServerRequest serverRequest) {
+        logger.info("Received GET request for Ping");
         return pipeline.executeToServerResponse(serverRequest);
     }
 }

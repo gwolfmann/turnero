@@ -7,12 +7,12 @@ import java.time.LocalDateTime;
 
 @Builder
 @Data
-public class CustomResponse<T> {
+public class CustomBadResponse {
     private String requestPath;
     private HttpStatus httpStatus;
-    private T data;
-    private String className;
-    private Integer responseCount;
+    private String exceptionClassName;
+    private String message;
+    private StackTraceElement lastCall;
     @Builder.Default
     private LocalDateTime responseTime = LocalDateTime.now();
 }
