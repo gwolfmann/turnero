@@ -2,16 +2,17 @@ package com.espou.turnero.service;
 
 import com.espou.turnero.storage.ProviderDTO;
 import com.espou.turnero.storage.ProviderRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.NoSuchElementException;
-
 @Service
 public class ProviderService {
+
     private final ProviderRepository providerRepository;
 
+    @Autowired
     public ProviderService(ProviderRepository providerRepository) {
         this.providerRepository = providerRepository;
     }
@@ -21,45 +22,41 @@ public class ProviderService {
     }
 
     public Mono<ProviderDTO> getProviderById(String id) {
-        return providerRepository.findById(id);
+        return providerRepository.findById(id)
+                .switchIfEmpty(Mono.error(new RuntimeException("Not found Provider by id " + id)));
     }
 
     public Mono<ProviderDTO> getProviderByInternalId(String internalId) {
-        return providerRepository.findByInternalId(internalId);
+        return providerRepository.findByInternalId(internalId)
+                .switchIfEmpty(Mono.error(new RuntimeException("Not found Provider by internalId " + internalId)));
     }
 
-    public Mono<ProviderDTO> createProvider(ProviderDTO providerDTO) {
+    public Mono<ProviderDTO> writeProvider(ProviderDTO providerDTO) {
         return providerRepository.save(providerDTO);
     }
 
-    public Mono<ProviderDTO> updateProvider(String id, ProviderDTO providerDTO) {
-        return providerRepository.findById(id)
-                .flatMap(existingProvider -> {
-                    existingProvider.setName(providerDTO.getName());
-                    existingProvider.setTimeline(providerDTO.getTimeline());
-                    existingProvider.setDefaultResource(providerDTO.getDefaultResource());
-                    existingProvider.setDefaultTask(providerDTO.getDefaultTask());
-                    return providerRepository.save(existingProvider);
-                });
-    }
-
-    public Mono<ProviderDTO> updateProviderByInternalId(String internalId, ProviderDTO providerDTO) {
+    public Mono<ProviderDTO> updateProvider(ProviderDTO providerDTO, String internalId) {
         return providerRepository.findByInternalId(internalId)
-                .switchIfEmpty(Mono.error(new NoSuchElementException(internalId + " Provider not found")))
-                .flatMap(existingProvider -> {
-                    providerDTO.setId(existingProvider.getId());
-                    return providerRepository.save(providerDTO);
-                });
+                .flatMap(existingProvider -> updateId(providerDTO, existingProvider.getId()))
+                .flatMap(providerRepository::save)
+                .switchIfEmpty(Mono.error(new RuntimeException("Not found to update Provider by internalId " + internalId)));
     }
 
-    public Mono<Void> deleteProvider(String id) {
-        return providerRepository.deleteById(id);
-    }
-
-    public Mono<Void> deleteProviderByInternalId(String internalId) {
+    public Mono<ProviderDTO> deleteProvider(ProviderDTO providerDTO, String internalId) {
         return providerRepository.findByInternalId(internalId)
-                .flatMap(provider -> providerRepository.deleteById(provider.getId()));
+                .flatMap(existingProvider -> updateId(providerDTO, existingProvider.getId()))
+                .flatMap(providerRepository::delete)
+                .thenReturn(representsDeleted(providerDTO))
+                .switchIfEmpty(Mono.error(new RuntimeException("Not found to update Provider by internalId " + internalId)));
+    }
+
+    private Mono<ProviderDTO> updateId(ProviderDTO providerDTO, String id) {
+        providerDTO.setId(id);
+        return Mono.just(providerDTO);
+    }
+
+    private ProviderDTO representsDeleted(ProviderDTO providerDTO) {
+        providerDTO.setName("deleted value");
+        return providerDTO;
     }
 }
-
-
