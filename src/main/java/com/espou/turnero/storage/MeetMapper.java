@@ -13,7 +13,8 @@ public class MeetMapper {
             meet.getDate(),
             meet.getHour(),
             meet.getDuration(),
-            meet.getInternalId()
+            meet.getInternalId(),
+            meet.getLastUSer()
         );
     }
 
@@ -27,7 +28,8 @@ public class MeetMapper {
             meetDto.getDate(),
             meetDto.getHour(),
             meetDto.getDuration(),
-            meetDto.getInternalId()
+            meetDto.getInternalId(),
+            meetDto.getLastUSer()
         );
     }
 }

@@ -18,6 +18,7 @@ public class Meet {
     private LocalTime hour;
     private Integer duration;
     private String internalId;
+    private User lastUSer;
 
     public LocalTime endingTime() {
         return hour.plusMinutes(duration);
