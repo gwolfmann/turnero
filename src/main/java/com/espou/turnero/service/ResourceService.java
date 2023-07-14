@@ -30,4 +30,31 @@ public class ResourceService {
         return resourceRepository.findByInternalId(internalId)
                 .switchIfEmpty(Mono.error(new RuntimeException("Not found Resource by internalId "+internalId) ));
     }
+
+    public Mono<ResourceDTO> writeResource(ResourceDTO resourceDTO){
+        return resourceRepository.save(resourceDTO);
+    }
+    public Mono<ResourceDTO> updateResource(ResourceDTO resourceDTO, String internalId){
+        return resourceRepository.findByInternalId(internalId)
+            .flatMap(existingResource -> updateId(resourceDTO,existingResource.getId()))
+            .flatMap(resourceRepository::save)
+            .switchIfEmpty(Mono.error(new RuntimeException("Not found to update Resource by internalId "+internalId) ));
+    }
+
+    public Mono<ResourceDTO> deleteResource(ResourceDTO resourceDTO, String internalId){
+        return resourceRepository.findByInternalId(internalId)
+                .flatMap(existingResource -> updateId(resourceDTO,existingResource.getId()))
+                .flatMap(resourceRepository::delete)
+                .thenReturn(representsDeleted(resourceDTO))
+                .switchIfEmpty(Mono.error(new RuntimeException("Not found to update Resource by internalId "+internalId) ));
+    }
+
+    private Mono<ResourceDTO> updateId(ResourceDTO resourceDTO, String id){
+        resourceDTO.setId(id);
+        return Mono.just(resourceDTO);
+    }
+    private ResourceDTO representsDeleted(ResourceDTO resourceDTO){
+        resourceDTO.setName("deleted value");
+        return resourceDTO;
+    }
 }

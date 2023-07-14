@@ -25,6 +25,9 @@ public class ResourceHandler {
     public RouterFunction<ServerResponse> resourceRouter() {
         return route(GET("/resources"), resourcePipeline::getResourceList)
                 .andRoute(GET("/resources/{id}"), resourcePipeline::getResourceSingle)
-                .andRoute(GET("/resources/internal/{internalId}"), resourcePipeline::getResourceSingle);
+                .andRoute(GET("/resources/internal/{internalId}"), resourcePipeline::getResourceSingle)
+                .andRoute(POST("/resources"),resourcePipeline::writeSingleResource)
+                .andRoute(PUT("/resources/{internalId}"),resourcePipeline::writeSingleResource)
+                .andRoute(DELETE("/resources/{internalId}"), resourcePipeline::deleteResource);
     }
 }
