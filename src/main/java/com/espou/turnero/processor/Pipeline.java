@@ -2,6 +2,9 @@ package com.espou.turnero.processor;
 
 import com.espou.turnero.response.CustomBadResponse;
 import com.espou.turnero.response.CustomResponse;
+import com.espou.turnero.storage.UserDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -76,4 +79,16 @@ public class Pipeline<RAW,BO,DTO> {
         }
         return count;
     }
+
+    public static <T> String asJson(T value)  {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String result="";
+        try{
+            result = objectMapper.writeValueAsString(value);
+        } catch (JsonProcessingException ex) {
+
+        }
+        return result;
+    }
+
 }

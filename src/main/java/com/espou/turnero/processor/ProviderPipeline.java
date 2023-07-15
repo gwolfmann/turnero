@@ -59,7 +59,7 @@ public class ProviderPipeline {
                 .collect(Collectors.toList()));
     }
 
-    private Pipeline listReadPipelineBuilder() {
+    private Pipeline<List<ProviderDTO>, List<Provider>, List<Provider>> listReadPipelineBuilder() {
         return Pipeline.<List<ProviderDTO>, List<Provider>, List<Provider>>builder()
                 .validateRequest(Pipeline::noOp)
                 .validateBody(Pipeline::noOp)
@@ -70,7 +70,7 @@ public class ProviderPipeline {
                 .build();
     }
 
-    private Pipeline singleReadPipelineBuilder() {
+    private Pipeline<ProviderDTO, Provider, Provider> singleReadPipelineBuilder() {
         return Pipeline.<ProviderDTO, Provider, Provider>builder()
                 .validateRequest(Pipeline::noOp)
                 .validateBody(Pipeline::noOp)
@@ -81,10 +81,10 @@ public class ProviderPipeline {
                 .build();
     }
 
-    private Pipeline writePipelineBuilder() {
+    private Pipeline<ProviderDTO, ProviderDTO, ProviderDTO> writePipelineBuilder() {
         return Pipeline.<ProviderDTO, ProviderDTO, ProviderDTO>builder()
                 .validateRequest(Pipeline::noOp)
-                .validateBody(Pipeline::noOp)
+                .validateBody(this::validateBody)
                 .storageOp(this::writeProvider)
                 .boProcessor(Pipeline::noOp)
                 .presenter(Pipeline::noOp)
@@ -127,4 +127,25 @@ public class ProviderPipeline {
                     .flatMap(providerService::writeProvider);
         }
     }
+
+    private Mono<ServerRequest> validateBody(ServerRequest serverRequest) {
+        return serverRequest.bodyToMono(ProviderDTO.class)
+                .flatMap(providerDTO -> {
+                    if (isProviderValid(providerDTO)) {
+                        return Mono.just(ServerRequest.from(serverRequest).body(Pipeline.asJson(providerDTO)).build());
+                    } else {
+                        return Mono.error(new RuntimeException("No proper body in the provider Post " + providerDTO));
+                    }
+                })
+                .switchIfEmpty(Mono.error(new RuntimeException("Empty request body")));
+    }
+
+    private boolean isProviderValid(ProviderDTO provider) {
+        return provider.getName() != null && !provider.getName().isEmpty()
+                && provider.getTimeline() != null
+                && provider.getDefaultResource() != null
+                && provider.getDefaultTask() != null
+                && provider.getInternalId() != null && !provider.getInternalId().isEmpty();
+    }
+
 }

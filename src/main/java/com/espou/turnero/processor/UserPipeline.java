@@ -4,13 +4,19 @@ import com.espou.turnero.model.User;
 import com.espou.turnero.service.UserService;
 import com.espou.turnero.storage.UserDTO;
 import com.espou.turnero.storage.UserMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.BodyExtractors;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -59,7 +65,7 @@ public class UserPipeline {
                 .collect(Collectors.toList()));
     }
 
-    private Pipeline listReadPipelineBuilder() {
+    private Pipeline<List<UserDTO>, List<User>, List<User>> listReadPipelineBuilder() {
         return Pipeline.<List<UserDTO>, List<User>, List<User>>builder()
                 .validateRequest(Pipeline::noOp)
                 .validateBody(Pipeline::noOp)
@@ -70,7 +76,7 @@ public class UserPipeline {
                 .build();
     }
 
-    private Pipeline singleReadPipelineBuilder() {
+    private Pipeline<UserDTO, User, User> singleReadPipelineBuilder() {
         return Pipeline.<UserDTO, User, User>builder()
                 .validateRequest(Pipeline::noOp)
                 .validateBody(Pipeline::noOp)
@@ -81,10 +87,10 @@ public class UserPipeline {
                 .build();
     }
 
-    private Pipeline writePipelineBuilder() {
+    private Pipeline<UserDTO, UserDTO, UserDTO> writePipelineBuilder() {
         return Pipeline.<UserDTO, UserDTO, UserDTO>builder()
                 .validateRequest(Pipeline::noOp)
-                .validateBody(Pipeline::noOp)
+                .validateBody(this::validateBody)
                 .storageOp(this::writeUser)
                 .boProcessor(Pipeline::noOp)
                 .presenter(Pipeline::noOp)
@@ -127,4 +133,24 @@ public class UserPipeline {
                     .flatMap(userService::writeUser);
         }
     }
+
+    private Mono<ServerRequest> validateBody(ServerRequest serverRequest){
+        return serverRequest.bodyToMono(UserDTO.class)
+            .flatMap(userDTO -> {
+                if (isUserValid(userDTO)) {
+                    return Mono.just(ServerRequest.from(serverRequest).body(Pipeline.asJson(userDTO)).build());
+                } else {
+                    return Mono.error(new RuntimeException("No proper body in the user Post "+userDTO));
+                }
+            })
+            .switchIfEmpty(Mono.error(new RuntimeException("Empty request body")));
+    }
+
+    private boolean isUserValid(UserDTO user) {
+        return user.getName() != null && !user.getName().isEmpty()
+                && user.getEmail() != null && !user.getEmail().isEmpty()
+                && user.getPassw() != null && !user.getPassw().isEmpty()
+                && user.getInternalId() != null && !user.getInternalId().isEmpty();
+    }
+
 }

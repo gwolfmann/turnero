@@ -58,7 +58,7 @@ public class TaskPipeline {
                 .collect(Collectors.toList()));
     }
 
-    private Pipeline listReadPipelineBuilder() {
+    private Pipeline<List<TaskDTO>, List<Task>, List<Task>> listReadPipelineBuilder() {
         return Pipeline.<List<TaskDTO>, List<Task>, List<Task>>builder()
                 .validateRequest(Pipeline::noOp)
                 .validateBody(Pipeline::noOp)
@@ -69,7 +69,7 @@ public class TaskPipeline {
                 .build();
     }
 
-    private Pipeline singleReadPipelineBuilder() {
+    private Pipeline<TaskDTO, Task, Task> singleReadPipelineBuilder() {
         return Pipeline.<TaskDTO, Task, Task>builder()
                 .validateRequest(Pipeline::noOp)
                 .validateBody(Pipeline::noOp)
@@ -80,10 +80,10 @@ public class TaskPipeline {
                 .build();
     }
 
-    private Pipeline writePipelineBuilder() {
+    private Pipeline<TaskDTO, TaskDTO, TaskDTO> writePipelineBuilder() {
         return Pipeline.<TaskDTO, TaskDTO, TaskDTO>builder()
                 .validateRequest(Pipeline::noOp)
-                .validateBody(Pipeline::noOp)
+                .validateBody(this::validateBody)
                 .storageOp(this::writeTask)
                 .boProcessor(Pipeline::noOp)
                 .presenter(Pipeline::noOp)
@@ -126,4 +126,22 @@ public class TaskPipeline {
                     .flatMap(taskService::writeTask);
         }
     }
+    private Mono<ServerRequest> validateBody(ServerRequest serverRequest) {
+        return serverRequest.bodyToMono(TaskDTO.class)
+                .flatMap(taskDTO -> {
+                    if (isTaskValid(taskDTO)) {
+                        return Mono.just(ServerRequest.from(serverRequest).body(Pipeline.asJson(taskDTO)).build());
+                    } else {
+                        return Mono.error(new RuntimeException("No proper body in the task Post " + taskDTO));
+                    }
+                })
+                .switchIfEmpty(Mono.error(new RuntimeException("Empty request body")));
+    }
+
+    private boolean isTaskValid(TaskDTO task) {
+        return task.getName() != null && !task.getName().isEmpty()
+                && task.getDuration() != null
+                && task.getInternalId() != null && !task.getInternalId().isEmpty();
+    }
+
 }

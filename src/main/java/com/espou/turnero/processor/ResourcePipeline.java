@@ -58,7 +58,7 @@ public class ResourcePipeline {
             .collect(Collectors.toList()));
     }
 
-    private Pipeline listReadPipelineBuilder(){
+    private Pipeline<List<ResourceDTO>, List<Resource>,List<Resource>> listReadPipelineBuilder(){
         return Pipeline.<List<ResourceDTO>, List<Resource>,List<Resource>>builder()
                 .validateRequest(Pipeline::noOp)
                 .validateBody(Pipeline::noOp)
@@ -69,8 +69,8 @@ public class ResourcePipeline {
                 .build();
     }
 
-    private Pipeline singleReadPipelineBuilder(){
-        return Pipeline.< ResourceDTO, Resource, Resource>builder()
+    private Pipeline<ResourceDTO, Resource, Resource> singleReadPipelineBuilder(){
+        return Pipeline.<ResourceDTO, Resource, Resource>builder()
                 .validateRequest(Pipeline::noOp)
                 .validateBody(Pipeline::noOp)
                 .storageOp(this::getSingleResource)
@@ -80,10 +80,10 @@ public class ResourcePipeline {
                 .build();
     }
 
-    private Pipeline writePipelineBuilder(){
+    private Pipeline<ResourceDTO,ResourceDTO, ResourceDTO> writePipelineBuilder(){
         return Pipeline.<ResourceDTO,ResourceDTO, ResourceDTO>builder()
                 .validateRequest(Pipeline::noOp)
-                .validateBody(Pipeline::noOp)
+                .validateBody(this::validateBody)
                 .storageOp(this::writeResource)
                 .boProcessor(Pipeline::noOp)
                 .presenter(Pipeline::noOp)
@@ -125,4 +125,23 @@ public class ResourcePipeline {
 
         }
     }
+
+    private Mono<ServerRequest> validateBody(ServerRequest serverRequest) {
+        return serverRequest.bodyToMono(ResourceDTO.class)
+                .flatMap(resourceDTO -> {
+                    if (isResourceValid(resourceDTO)) {
+                        return Mono.just(ServerRequest.from(serverRequest).body(Pipeline.asJson(resourceDTO)).build());
+                    } else {
+                        return Mono.error(new RuntimeException("No proper body in the resource Post " + resourceDTO));
+                    }
+                })
+                .switchIfEmpty(Mono.error(new RuntimeException("Empty request body")));
+    }
+
+    private boolean isResourceValid(ResourceDTO resource) {
+        return resource.getName() != null && !resource.getName().isEmpty()
+                && resource.getTimeline() != null
+                && resource.getInternalId() != null && !resource.getInternalId().isEmpty();
+    }
+
 }
