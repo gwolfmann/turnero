@@ -6,9 +6,9 @@ public class MeetMapper {
     public static MeetDTO toDto(Meet meet) {
         return new MeetDTO(
             meet.getId(),
-            meet.getResource(),
-            meet.getProvider(),
-            meet.getReceiver(),
+            meet.getResource().getInternalId(),
+            meet.getProvider().getInternalId(),
+            meet.getReceiver().getInternalId(),
             meet.getTask(),
             meet.getDate(),
             meet.getHour(),
@@ -21,9 +21,9 @@ public class MeetMapper {
     public static Meet toEntity(MeetDTO meetDto) {
         return new Meet(
             meetDto.getId(),
-            meetDto.getResource(),
-            meetDto.getProvider(),
-            meetDto.getReceiver(),
+            meetDto.getResourceInternalId(),
+            meetDto.getProviderInternalId(),
+            meetDto.getReceiverInternalId(),
             meetDto.getTask(),
             meetDto.getDate(),
             meetDto.getHour(),

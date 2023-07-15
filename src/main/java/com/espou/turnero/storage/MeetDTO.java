@@ -16,9 +16,9 @@ import java.time.LocalTime;
 public class MeetDTO {
     @Id
     private String id;
-    private Resource resource;
-    private Provider provider;
-    private Receiver receiver;
+    private String resourceInternalId;
+    private String providerInternalId;
+    private String receiverInternalId;
     private Task task;
     private LocalDate date;
     private LocalTime hour;
@@ -26,7 +26,6 @@ public class MeetDTO {
     @Indexed(unique = true)
     private String internalId;
     private User lastUSer;
-
 
     public LocalTime getEndTime() {
         return hour.plusMinutes(duration);
