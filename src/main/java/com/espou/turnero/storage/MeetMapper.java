@@ -29,7 +29,7 @@ public class MeetMapper {
             meetDto.getHour(),
             meetDto.getDuration(),
             meetDto.getInternalId(),
-            meetDto.getLastUSer()
+            meetDto.getLastUser()
         );
     }
 }

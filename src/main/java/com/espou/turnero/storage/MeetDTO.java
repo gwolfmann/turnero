@@ -25,7 +25,7 @@ public class MeetDTO {
     private Integer duration;
     @Indexed(unique = true)
     private String internalId;
-    private User lastUSer;
+    private User lastUser;
 
     public LocalTime getEndTime() {
         return hour.plusMinutes(duration);

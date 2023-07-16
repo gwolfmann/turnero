@@ -19,6 +19,7 @@ public class MeetController {
     public MeetController(MeetService meetService) {
         this.meetService = meetService;
     }
+/*
 
     @GetMapping(value = "/resource/{resourceId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Flux<MeetDTO> getMeetsByResource(@PathVariable String resourceId) {
@@ -54,4 +55,5 @@ public class MeetController {
         logger.info("Received DELETE request for meet with ID: {}", id);
         return meetService.deleteMeet(id);
     }
+*/
 }

@@ -1,24 +1,66 @@
 package com.espou.turnero.service;
 
-import com.espou.turnero.model.TimeLine;
+
 import com.espou.turnero.storage.MeetDTO;
 import com.espou.turnero.storage.MeetRepository;
-import com.espou.turnero.storage.ProviderDTO;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 public class MeetService {
     private final MeetRepository meetRepository;
+
+    @Autowired
+    public MeetService(MeetRepository meetRepository) {
+        this.meetRepository = meetRepository;
+    }
+
+    public Flux<MeetDTO> getAllMeets() {
+        return meetRepository.findAll();
+    }
+
+    public Mono<MeetDTO> getMeetById(String id) {
+        return meetRepository.findById(id)
+                .switchIfEmpty(Mono.error(new RuntimeException("Meet not found with id: " + id)));
+    }
+
+    public Mono<MeetDTO> getMeetByInternalId(String internalId) {
+        return meetRepository.findByInternalId(internalId)
+                .switchIfEmpty(Mono.error(new RuntimeException("Meet not found with internalId: " + internalId)));
+    }
+
+    public Mono<MeetDTO> createMeet(MeetDTO meetDTO) {
+        return meetRepository.save(meetDTO);
+    }
+
+    public Mono<MeetDTO> updateMeet(MeetDTO meetDTO, String internalId) {
+        return meetRepository.findByInternalId(internalId)
+                .flatMap(existingMeet -> {
+                    meetDTO.setId(existingMeet.getId());
+                    return meetRepository.save(meetDTO);
+                })
+                .switchIfEmpty(Mono.error(new RuntimeException("Meet not found with internalId: " + internalId)));
+    }
+
+    public Mono<MeetDTO> deleteMeet(String internalId) {
+        return meetRepository.findByInternalId(internalId)
+                .flatMap(existingMeet -> meetRepository.delete(existingMeet)
+                        .thenReturn(existingMeet))
+                .switchIfEmpty(Mono.error(new RuntimeException("Meet not found with internalId: " + internalId)));
+    }
+}
+
+/*
+@Service
+public class MeetService {
+    private final MeetRepositoryOld meetRepositoryOld;
     private final ResourceServiceOld resourceServiceOld;
     private final ProviderService providerService;
 
-    public MeetService(MeetRepository meetRepository, ResourceServiceOld resourceServiceOld, ProviderService providerService) {
-        this.meetRepository = meetRepository;
+    public MeetService(MeetRepositoryOld meetRepositoryOld, ResourceServiceOld resourceServiceOld, ProviderService providerService) {
+        this.meetRepositoryOld = meetRepositoryOld;
         this.resourceServiceOld = resourceServiceOld;
         this.providerService = providerService;
     }
@@ -46,7 +88,7 @@ public class MeetService {
                         .collectList()
                         .flatMap(existingMeets -> {
                             if (existingMeets.isEmpty()) {
-                                return meetRepository.save(meetDTO);
+                                return meetRepositoryOld.save(meetDTO);
                             } else {
                                 return Mono.error(new IllegalArgumentException("Meet overlaps with existing meets."));
                             }
@@ -60,7 +102,7 @@ public class MeetService {
     }
 
     private Flux<MeetDTO> getOverlappingMeets(String resourceId, String providerId, LocalDate date, LocalTime startTime, LocalTime endTime) {
-        return meetRepository.findByResourceAndProvider(resourceId, providerId)
+        return meetRepositoryOld.findByResourceAndProvider(resourceId, providerId)
             .filter(existingMeet ->
                 date.equals(existingMeet.getDate()) &&
                     !(endTime.isBefore(existingMeet.getHour()) || startTime.isAfter(existingMeet.getEndTime()))
@@ -68,11 +110,11 @@ public class MeetService {
     }
 
     public Mono<MeetDTO> getMeetById(String id) {
-        return meetRepository.findById(id);
+        return meetRepositoryOld.findById(id);
     }
 
     public Mono<MeetDTO> updateMeet(String id, MeetDTO meetDTO) {
-        return meetRepository.findById(id)
+        return meetRepositoryOld.findById(id)
                 .flatMap(existingMeet -> {
                     existingMeet.setResource(meetDTO.getResource());
                     existingMeet.setProvider(meetDTO.getProvider());
@@ -82,18 +124,18 @@ public class MeetService {
                     existingMeet.setHour(meetDTO.getHour());
                     existingMeet.setDuration(meetDTO.getDuration());
                     existingMeet.setInternalId(meetDTO.getInternalId());
-                    return meetRepository.save(existingMeet);
+                    return meetRepositoryOld.save(existingMeet);
                 });
     }
 
     public Mono<Void> deleteMeet(String id) {
-        return meetRepository.deleteById(id);
+        return meetRepositoryOld.deleteById(id);
     }
     public Flux<MeetDTO> getMeetsByResource(String resourceId) {
-        return meetRepository.findByResource_Id(resourceId);
+        return meetRepositoryOld.findByResource_Id(resourceId);
     }
 
     public Flux<MeetDTO> getMeetsByProvider(String providerId) {
-        return meetRepository.findByProvider_Id(providerId);
+        return meetRepositoryOld.findByProvider_Id(providerId);
     }
-}
+*/
