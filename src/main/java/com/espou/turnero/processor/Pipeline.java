@@ -2,10 +2,12 @@ package com.espou.turnero.processor;
 
 import com.espou.turnero.response.CustomBadResponse;
 import com.espou.turnero.response.CustomResponse;
-import com.espou.turnero.storage.UserDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.Builder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -24,6 +26,8 @@ public class Pipeline<RAW,BO,DTO> {
     protected final Function<RAW, Mono<BO>> boProcessor;
     protected final Function<BO, Mono<DTO>> presenter;
     protected final Function<Throwable,Mono<DTO>> handleErrorResponse;
+
+    private static final Logger logger = LoggerFactory.getLogger(MeetPipeline.class);
 
     public Mono<DTO> execute(ServerRequest serverRequest){
         return Mono.just(serverRequest)
@@ -82,11 +86,13 @@ public class Pipeline<RAW,BO,DTO> {
 
     public static <T> String asJson(T value)  {
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+
         String result="";
         try{
             result = objectMapper.writeValueAsString(value);
         } catch (JsonProcessingException ex) {
-
+            logger.info("Mapper as Json error:"+ ex.getMessage());
         }
         return result;
     }

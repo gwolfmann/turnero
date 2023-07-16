@@ -2,8 +2,10 @@ package com.espou.turnero.processor;
 
 import com.espou.turnero.model.Meet;
 import com.espou.turnero.service.MeetService;
-import com.espou.turnero.storage.MeetDTO;
-import com.espou.turnero.storage.MeetMapper;
+import com.espou.turnero.service.ProviderService;
+import com.espou.turnero.service.ReceiverService;
+import com.espou.turnero.service.ResourceService;
+import com.espou.turnero.storage.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +29,20 @@ public class MeetPipeline {
     private final Logger logger = LoggerFactory.getLogger(MeetPipeline.class);
 
     private final MeetService meetService;
+    private final ResourceService resourceService;
+    private final ProviderService providerService;
+    private final ReceiverService receiverService;
+
 
     @Autowired
-    public MeetPipeline(MeetService meetService) {
+    public MeetPipeline(MeetService meetService,
+                        ResourceService resourceService,
+                        ProviderService providerService,
+                        ReceiverService receiverService) {
         this.meetService = meetService;
+        this.resourceService = resourceService;
+        this.providerService = providerService;
+        this.receiverService = receiverService;
         singleReadPipeline = singleReadPipelineBuilder();
         listReadPipeline = listReadPipelineBuilder();
         singleWritePipeline = writePipelineBuilder();
@@ -68,10 +80,7 @@ public class MeetPipeline {
                 .validateRequest(Pipeline::noOp)
                 .validateBody(Pipeline::noOp)
                 .storageOp(this::getSingleMeet)
-                /*TODO
-                en el processor agregar las lecturas de los related
-                 */
-                .boProcessor(x->Mono.just(MeetMapper.toEntity(x)))
+                .boProcessor(this::getRelated)
                 .presenter(Pipeline::noOp)
                 .handleErrorResponse(Mono::error)
                 .build();
@@ -118,11 +127,12 @@ public class MeetPipeline {
             String internalId = vars.get("internalId");
             if (serverRequest.method().equals(HttpMethod.DELETE)) {
                 logger.info("Received DELETE request for meet with internalId: {}", internalId);
-                return meetService.deleteMeet(internalId);
+                return serverRequest.bodyToMono(MeetDTO.class)
+                        .flatMap(x -> meetService.deleteMeet(internalId));
             } else {
                 logger.info("Received PUT request for meet with internalId: {}", internalId);
                 return serverRequest.bodyToMono(MeetDTO.class)
-                        .flatMap(meetDTO -> meetService.updateMeet(meetDTO, internalId));
+                        .flatMap(x -> meetService.updateMeet(x, internalId));
             }
         } else {
             logger.info("Received POST request for meet ");
@@ -134,9 +144,9 @@ public class MeetPipeline {
         return serverRequest.bodyToMono(MeetDTO.class)
                 .flatMap(meetDTO -> {
                     if (isMeetValid(meetDTO)) {
-                        return Mono.just(serverRequest);
+                        return Mono.just(ServerRequest.from(serverRequest).body(Pipeline.asJson(meetDTO)).build());
                     } else {
-                        return Mono.error(new RuntimeException("Invalid body in the Meet Post"));
+                        return Mono.error(new RuntimeException("No proper body in the meet Post "+meetDTO));
                     }
                 })
                 .switchIfEmpty(Mono.error(new RuntimeException("Empty request body")));
@@ -154,4 +164,31 @@ public class MeetPipeline {
                 && meet.getLastUser() != null;
     }
 
+    private Mono<Meet> getRelated(MeetDTO meetDTO){
+        Meet meet = MeetMapper.toEntity(meetDTO);
+        return Mono.just(meet)
+                .flatMap(m-> setResource(m, meetDTO.getResourceInternalId()))
+                .flatMap(m-> setProvider(m, meetDTO.getProviderInternalId()))
+                .flatMap(m-> setReceiver(m, meetDTO.getReceiverInternalId()))
+                .switchIfEmpty(Mono.just(meet));
+    }
+
+    private Mono<Meet> setResource(Meet meet,String resourceInternalId){
+        return resourceService.getResourceByInternalId(resourceInternalId)
+                .map(ResourceMapper::toEntity)
+                .flatMap(resource -> {meet.setResource(resource);
+                    return Mono.just(meet);});
+    }
+    private Mono<Meet> setProvider(Meet meet,String providerInternalId){
+        return providerService.getProviderByInternalId(providerInternalId)
+                .map(ProviderMapper::toEntity)
+                .flatMap(provider -> {meet.setProvider(provider);
+                    return Mono.just(meet);});
+    }
+    private Mono<Meet> setReceiver(Meet meet,String receiverInternalId){
+        return receiverService.getReceiverByInternalId(receiverInternalId)
+                .map(ReceiverMapper::toEntity)
+                .flatMap(receiver -> {meet.setReceiver(receiver);
+                    return Mono.just(meet);});
+    }
 }
