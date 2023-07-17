@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Component
 public class MeetPipeline {
     private final Pipeline<MeetDTO, Meet, Meet> singleReadPipeline;
-    private final Pipeline<List<MeetDTO>, List<Meet>, List<Meet>> listReadPipeline;
+    private final Pipeline<List<MeetDTOLookup>, List<Meet>, List<Meet>> listReadPipeline;
     private final Pipeline<MeetDTO, MeetDTO, MeetDTO> singleWritePipeline;
 
     private final Logger logger = LoggerFactory.getLogger(MeetPipeline.class);
@@ -69,7 +69,7 @@ public class MeetPipeline {
         return singleWritePipeline.executeToServerResponse(serverRequest);
     }
 
-    private Mono<List<Meet>> mapListToMeet(List<MeetDTO> list) {
+    private Mono<List<Meet>> mapListToMeet(List<MeetDTOLookup> list) {
         return Mono.just(list.stream()
                 .map(MeetMapper::toEntity)
                 .collect(Collectors.toList()));
@@ -86,11 +86,11 @@ public class MeetPipeline {
                 .build();
     }
 
-    private Pipeline<List<MeetDTO>, List<Meet>, List<Meet>> listReadPipelineBuilder() {
-        return Pipeline.<List<MeetDTO>, List<Meet>, List<Meet>>builder()
+    private Pipeline<List<MeetDTOLookup>, List<Meet>, List<Meet>> listReadPipelineBuilder() {
+        return Pipeline.<List<MeetDTOLookup>, List<Meet>, List<Meet>>builder()
                 .validateRequest(Pipeline::noOp)
                 .validateBody(Pipeline::noOp)
-                .storageOp(x -> meetService.getAllMeets().collectList())
+                .storageOp(x -> meetService.getAllMeets(x).collectList())
                 .boProcessor(this::mapListToMeet)
                 .presenter(Pipeline::noOp)
                 .handleErrorResponse(Mono::error)
@@ -169,26 +169,28 @@ public class MeetPipeline {
         return Mono.just(meet)
                 .flatMap(m-> setResource(m, meetDTO.getResourceInternalId()))
                 .flatMap(m-> setProvider(m, meetDTO.getProviderInternalId()))
-                .flatMap(m-> setReceiver(m, meetDTO.getReceiverInternalId()))
-                .switchIfEmpty(Mono.just(meet));
+                .flatMap(m-> setReceiver(m, meetDTO.getReceiverInternalId()));
     }
 
     private Mono<Meet> setResource(Meet meet,String resourceInternalId){
         return resourceService.getResourceByInternalId(resourceInternalId)
                 .map(ResourceMapper::toEntity)
                 .flatMap(resource -> {meet.setResource(resource);
-                    return Mono.just(meet);});
+                    return Mono.just(meet);})
+                .switchIfEmpty(Mono.just(meet));
     }
     private Mono<Meet> setProvider(Meet meet,String providerInternalId){
         return providerService.getProviderByInternalId(providerInternalId)
                 .map(ProviderMapper::toEntity)
                 .flatMap(provider -> {meet.setProvider(provider);
-                    return Mono.just(meet);});
+                    return Mono.just(meet);})
+                .switchIfEmpty(Mono.just(meet));
     }
     private Mono<Meet> setReceiver(Meet meet,String receiverInternalId){
         return receiverService.getReceiverByInternalId(receiverInternalId)
                 .map(ReceiverMapper::toEntity)
                 .flatMap(receiver -> {meet.setReceiver(receiver);
-                    return Mono.just(meet);});
+                    return Mono.just(meet);})
+                .switchIfEmpty(Mono.just(meet));
     }
 }

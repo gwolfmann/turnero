@@ -1,24 +1,35 @@
 package com.espou.turnero.service;
 
-
 import com.espou.turnero.storage.MeetDTO;
+import com.espou.turnero.storage.MeetDTOLookup;
+import com.espou.turnero.storage.MeetLookupRepository;
 import com.espou.turnero.storage.MeetRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Optional;
+
 @Service
 public class MeetService {
     private final MeetRepository meetRepository;
+    private final MeetLookupRepository meetLookupRepository;
 
     @Autowired
-    public MeetService(MeetRepository meetRepository) {
+    public MeetService(MeetRepository meetRepository,MeetLookupRepository meetLookupRepository) {
         this.meetRepository = meetRepository;
+        this.meetLookupRepository = meetLookupRepository;
     }
 
-    public Flux<MeetDTO> getAllMeets() {
-        return meetRepository.findAll();
+    public Flux<MeetDTOLookup> getAllMeets(ServerRequest serverRequest) {
+        Optional<String> resourceInternalId = serverRequest.queryParam("resource");
+        Optional<String> providerInternalId = serverRequest.queryParam("provider");
+        if (resourceInternalId.isPresent() || providerInternalId.isPresent()) {
+            return meetLookupRepository.getMeets(resourceInternalId.orElse(""), providerInternalId.orElse(""));
+        }
+        return meetLookupRepository.getMeets();
     }
 
     public Mono<MeetDTO> getMeetById(String id) {

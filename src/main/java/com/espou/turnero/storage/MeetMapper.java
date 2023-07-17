@@ -32,5 +32,19 @@ public class MeetMapper {
             meetDto.getLastUser()
         );
     }
+    public static Meet toEntity(MeetDTOLookup meetDTOLookup) {
+        return new Meet(
+                meetDTOLookup.getId(),
+                meetDTOLookup.getResource(),
+                meetDTOLookup.getProvider(),
+                meetDTOLookup.getReceiver(),
+                meetDTOLookup.getTask(),
+                meetDTOLookup.getDate(),
+                meetDTOLookup.getHour(),
+                meetDTOLookup.getDuration(),
+                meetDTOLookup.getInternalId(),
+                meetDTOLookup.getLastUser()
+        );
+    }
 }
 
