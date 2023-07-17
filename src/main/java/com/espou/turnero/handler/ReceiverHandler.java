@@ -23,10 +23,10 @@ public class ReceiverHandler {
     public RouterFunction<ServerResponse> receiverRouter() {
         return route(GET("/receivers"), receiverPipeline::getReceiverList)
                 .andRoute(GET("/receivers/{id}"), receiverPipeline::getReceiverSingle)
-                .andRoute(GET("/tasks/internal/{internalId}"), receiverPipeline::getReceiverSingle)
-                .andRoute(POST("/tasks"), receiverPipeline::writeSingleReceiver)
-                .andRoute(PUT("/tasks/{internalId}"), receiverPipeline::writeSingleReceiver)
-                .andRoute(DELETE("/tasks/{internalId}"), receiverPipeline::deleteReceiver);
+                .andRoute(GET("/receivers/internal/{internalId}"), receiverPipeline::getReceiverSingle)
+                .andRoute(POST("/receivers"), receiverPipeline::writeSingleReceiver)
+                .andRoute(PUT("/receivers/{internalId}"), receiverPipeline::writeSingleReceiver)
+                .andRoute(DELETE("/receivers/{internalId}"), receiverPipeline::deleteReceiver);
     }
 
 }
