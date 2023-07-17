@@ -119,34 +119,4 @@ public class MeetService {
                     !(endTime.isBefore(existingMeet.getHour()) || startTime.isAfter(existingMeet.getEndTime()))
             );
     }
-
-    public Mono<MeetDTO> getMeetById(String id) {
-        return meetRepositoryOld.findById(id);
-    }
-
-    public Mono<MeetDTO> updateMeet(String id, MeetDTO meetDTO) {
-        return meetRepositoryOld.findById(id)
-                .flatMap(existingMeet -> {
-                    existingMeet.setResource(meetDTO.getResource());
-                    existingMeet.setProvider(meetDTO.getProvider());
-                    existingMeet.setReceiver(meetDTO.getReceiver());
-                    existingMeet.setTask(meetDTO.getTask());
-                    existingMeet.setDate(meetDTO.getDate());
-                    existingMeet.setHour(meetDTO.getHour());
-                    existingMeet.setDuration(meetDTO.getDuration());
-                    existingMeet.setInternalId(meetDTO.getInternalId());
-                    return meetRepositoryOld.save(existingMeet);
-                });
-    }
-
-    public Mono<Void> deleteMeet(String id) {
-        return meetRepositoryOld.deleteById(id);
-    }
-    public Flux<MeetDTO> getMeetsByResource(String resourceId) {
-        return meetRepositoryOld.findByResource_Id(resourceId);
-    }
-
-    public Flux<MeetDTO> getMeetsByProvider(String providerId) {
-        return meetRepositoryOld.findByProvider_Id(providerId);
-    }
 */
