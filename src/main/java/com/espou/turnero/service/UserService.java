@@ -42,11 +42,12 @@ public class UserService {
                 .switchIfEmpty(Mono.error(new RuntimeException("Not found to update User by internalId " + internalId)));
     }
 
-    public Mono<UserDTO> deleteUser(UserDTO userDTO, String internalId) {
+    public Mono<UserDTO> deleteUser(String internalId) {
+      //  UserDTO userDTO = UserDTO.builder().internalId(internalId).build();
         return userRepository.findByInternalId(internalId)
-                .flatMap(existingUser -> updateId(userDTO, existingUser.getId()))
-                .flatMap(userRepository::delete)
-                .thenReturn(representsDeleted(userDTO))
+             //   .flatMap(existingUser -> updateId(userDTO, existingUser.getId()))
+                .flatMap(x -> {userRepository.delete(x);
+                                return Mono.just(representsDeleted(x));})
                 .switchIfEmpty(Mono.error(new RuntimeException("Not found to update User by internalId " + internalId)));
     }
 

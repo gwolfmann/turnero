@@ -1,6 +1,7 @@
 package com.espou.turnero.storage;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -8,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @AllArgsConstructor
+@Builder
 @Document(collection = "users")
 public class UserDTO {
     @Id

@@ -117,9 +117,12 @@ public class UserPipeline {
             String internalId = vars.get("internalId");
             if (serverRequest.method().equals(HttpMethod.DELETE)) {
                 logger.info("Received DELETE request for user with internalId: {}", internalId);
-                return serverRequest.bodyToMono(User.class)
+                return userService.deleteUser(internalId);
+/*
+                        serverRequest.bodyToMono(User.class)
                         .flatMap(x -> Mono.just(UserMapper.toDto(x)))
-                        .flatMap(x -> userService.deleteUser(x, internalId));
+                        .flatMap(x -> userService.deleteUser(internalId));
+*/
             } else {
                 logger.info("Received PUT request for user with internalId: {}", internalId);
                 return serverRequest.bodyToMono(User.class)
@@ -135,6 +138,9 @@ public class UserPipeline {
     }
 
     private Mono<ServerRequest> validateBody(ServerRequest serverRequest){
+        if (serverRequest.method().equals(HttpMethod.DELETE)) {
+            return Mono.just(serverRequest);
+        }
         return serverRequest.bodyToMono(UserDTO.class)
             .flatMap(userDTO -> {
                 if (isUserValid(userDTO)) {
