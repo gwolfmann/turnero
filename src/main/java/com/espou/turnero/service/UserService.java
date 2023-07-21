@@ -44,11 +44,9 @@ public class UserService {
 
     public Mono<UserDTO> deleteUser(String internalId) {
       //  UserDTO userDTO = UserDTO.builder().internalId(internalId).build();
-        return userRepository.findByInternalId(internalId)
-             //   .flatMap(existingUser -> updateId(userDTO, existingUser.getId()))
-                .flatMap(x -> {userRepository.delete(x);
-                                return Mono.just(representsDeleted(x));})
-                .switchIfEmpty(Mono.error(new RuntimeException("Not found to update User by internalId " + internalId)));
+        //todo: reemplazar todos los deletes
+        return userRepository.deleteByInternalId(internalId)
+                .switchIfEmpty(Mono.error(new RuntimeException("Not found to delete User by internalId " + internalId)));
     }
 
     private Mono<UserDTO> updateId(UserDTO userDTO, String id) {
