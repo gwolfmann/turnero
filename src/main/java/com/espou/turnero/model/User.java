@@ -10,5 +10,6 @@ public class User {
     private String name;
     private String email;
     private String passw;
+    private String telephone;
     private String internalId; // Internal ID
 }

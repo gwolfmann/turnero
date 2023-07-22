@@ -17,6 +17,7 @@ public class UserDTO {
     private String name;
     private String email;
     private String passw;
+    private String telephone;
     @Indexed(unique = true)
     private String internalId;
 }
