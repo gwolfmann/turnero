@@ -4,19 +4,13 @@ import com.espou.turnero.model.User;
 import com.espou.turnero.service.UserService;
 import com.espou.turnero.storage.UserDTO;
 import com.espou.turnero.storage.UserMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.BodyExtractors;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -118,11 +112,6 @@ public class UserPipeline {
             if (serverRequest.method().equals(HttpMethod.DELETE)) {
                 logger.info("Received DELETE request for user with internalId: {}", internalId);
                 return userService.deleteUser(internalId);
-/*
-                        serverRequest.bodyToMono(User.class)
-                        .flatMap(x -> Mono.just(UserMapper.toDto(x)))
-                        .flatMap(x -> userService.deleteUser(internalId));
-*/
             } else {
                 logger.info("Received PUT request for user with internalId: {}", internalId);
                 return serverRequest.bodyToMono(User.class)

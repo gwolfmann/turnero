@@ -41,11 +41,8 @@ public class ResourceService {
             .switchIfEmpty(Mono.error(new RuntimeException("Not found to update Resource by internalId "+internalId) ));
     }
 
-    public Mono<ResourceDTO> deleteResource(ResourceDTO resourceDTO, String internalId){
-        return resourceRepository.findByInternalId(internalId)
-                .flatMap(existingResource -> updateId(resourceDTO,existingResource.getId()))
-                .flatMap(resourceRepository::delete)
-                .thenReturn(representsDeleted(resourceDTO))
+    public Mono<ResourceDTO> deleteResource(String internalId){
+        return resourceRepository.deleteByInternalId(internalId)
                 .switchIfEmpty(Mono.error(new RuntimeException("Not found to update Resource by internalId "+internalId) ));
     }
 

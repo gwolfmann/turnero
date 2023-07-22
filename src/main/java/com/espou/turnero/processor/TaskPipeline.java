@@ -110,9 +110,7 @@ public class TaskPipeline {
             String internalId = vars.get("internalId");
             if (serverRequest.method().equals(HttpMethod.DELETE)) {
                 logger.info("Received DELETE request for task with internalId: {}", internalId);
-                return serverRequest.bodyToMono(Task.class)
-                        .flatMap(x -> Mono.just(TaskMapper.toDto(x)))
-                        .flatMap(x -> taskService.deleteTask(x, internalId));
+                return taskService.deleteTask(internalId);
             } else {
                 logger.info("Received PUT request for task with internalId: {}", internalId);
                 return serverRequest.bodyToMono(Task.class)
@@ -127,6 +125,9 @@ public class TaskPipeline {
         }
     }
     private Mono<ServerRequest> validateBody(ServerRequest serverRequest) {
+        if (serverRequest.method().equals(HttpMethod.DELETE)) {
+            return Mono.just(serverRequest);
+        }
         return serverRequest.bodyToMono(TaskDTO.class)
                 .flatMap(taskDTO -> {
                     if (isTaskValid(taskDTO)) {

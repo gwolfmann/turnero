@@ -8,4 +8,5 @@ import reactor.core.publisher.Mono;
 public interface ResourceRepository extends ReactiveMongoRepository<ResourceDTO, String> {
     @Query("{ internalId: ?0 }")
     Mono<ResourceDTO> findByInternalId(String internalId);
+    Mono<ResourceDTO> deleteByInternalId(String internalId);
 }

@@ -42,12 +42,9 @@ public class TaskService {
                 .switchIfEmpty(Mono.error(new RuntimeException("Not found to update Task by internalId " + internalId)));
     }
 
-    public Mono<TaskDTO> deleteTask(TaskDTO taskDTO, String internalId) {
-        return taskRepository.findByInternalId(internalId)
-                .flatMap(existingTask -> updateId(taskDTO, existingTask.getId()))
-                .flatMap(taskRepository::delete)
-                .thenReturn(representsDeleted(taskDTO))
-                .switchIfEmpty(Mono.error(new RuntimeException("Not found to update Task by internalId " + internalId)));
+    public Mono<TaskDTO> deleteTask(String internalId) {
+        return taskRepository.deleteByInternalId(internalId)
+                .switchIfEmpty(Mono.error(new RuntimeException("Not found to delete Task by internalId " + internalId)));
     }
 
     private Mono<TaskDTO> updateId(TaskDTO taskDTO, String id) {

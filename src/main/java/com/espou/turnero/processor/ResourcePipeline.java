@@ -108,9 +108,7 @@ public class ResourcePipeline {
             String internalId = vars.get("internalId");
             if (serverRequest.method().equals(HttpMethod.DELETE)){
                 logger.info("Received DELETE request for resource with internalId: {}", internalId);
-                return serverRequest.bodyToMono(Resource.class)
-                        .flatMap(x -> Mono.just(ResourceMapper.toDto(x)))
-                        .flatMap(x -> resourceService.deleteResource(x,internalId));
+                return resourceService.deleteResource(internalId);
             } else{
                 logger.info("Received PUT request for resource with internalId: {}", internalId);
                 return serverRequest.bodyToMono(Resource.class)
@@ -127,6 +125,9 @@ public class ResourcePipeline {
     }
 
     private Mono<ServerRequest> validateBody(ServerRequest serverRequest) {
+        if (serverRequest.method().equals(HttpMethod.DELETE)) {
+            return Mono.just(serverRequest);
+        }
         return serverRequest.bodyToMono(ResourceDTO.class)
                 .flatMap(resourceDTO -> {
                     if (isResourceValid(resourceDTO)) {
