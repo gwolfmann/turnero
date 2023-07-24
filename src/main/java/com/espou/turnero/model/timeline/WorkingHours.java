@@ -6,18 +6,17 @@ import lombok.Data;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
 public class WorkingHours {
-    private List<HourRange> monHours;
-    private List<HourRange> tueHours;
-    private List<HourRange> wenHours;
-    private List<HourRange> thuHours;
-    private List<HourRange> friHours;
-    private List<HourRange> satHours;
-    private List<HourRange> sunHours;
+    private HourRange monHours;
+    private HourRange tueHours;
+    private HourRange wenHours;
+    private HourRange thuHours;
+    private HourRange friHours;
+    private HourRange satHours;
+    private HourRange sunHours;
     public boolean isDateTimeInRange(LocalDate date, LocalTime time) {
         DayOfWeek dayOfWeek = date.getDayOfWeek();
 
@@ -41,12 +40,7 @@ public class WorkingHours {
         }
     }
 
-    private boolean isTimeInRange(List<HourRange> hourRanges, LocalTime time) {
-        for (HourRange hourRange : hourRanges) {
-            if (hourRange.isTimeInRange(time)) {
-                return true;
-            }
-        }
-        return false;
+    private boolean isTimeInRange(HourRange hourRange, LocalTime time) {
+        return hourRange.isTimeInRange(time);
     }
 }
