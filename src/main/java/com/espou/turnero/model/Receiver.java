@@ -12,5 +12,7 @@ public class Receiver {
     private String name;
     private String affiliation;
     private Integer identification;
+    private String email;
+    private String telephone;
     private String internalId; // Internal ID
 }

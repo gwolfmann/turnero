@@ -110,9 +110,7 @@ public class ReceiverPipeline {
             String internalId = vars.get("internalId");
             if (serverRequest.method().equals(HttpMethod.DELETE)) {
                 logger.info("Received DELETE request for receiver with internalId: {}", internalId);
-                return serverRequest.bodyToMono(Receiver.class)
-                        .flatMap(x -> Mono.just(ReceiverMapper.toDto(x)))
-                        .flatMap(x -> receiverService.deleteReceiver(x, internalId));
+                return receiverService.deleteReceiver(internalId);
             } else {
                 logger.info("Received PUT request for receiver with internalId: {}", internalId);
                 return serverRequest.bodyToMono(Receiver.class)
@@ -128,6 +126,9 @@ public class ReceiverPipeline {
     }
 
     private Mono<ServerRequest> validateBody(ServerRequest serverRequest) {
+        if (serverRequest.method().equals(HttpMethod.DELETE)) {
+            return Mono.just(serverRequest);
+        }
         return serverRequest.bodyToMono(ReceiverDTO.class)
                 .flatMap(receiverDTO -> {
                     if (isReceiverValid(receiverDTO)) {
