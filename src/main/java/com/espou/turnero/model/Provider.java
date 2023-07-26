@@ -12,8 +12,8 @@ public class Provider {
     private String id;
     private String name;
     private TimeLine timeline;
-    private Resource defaultResource;
-    private Task defaultTask;
+//    private Resource defaultResource;
+//    private Task defaultTask;
     private String internalId;
 }
 

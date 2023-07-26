@@ -1,7 +1,5 @@
 package com.espou.turnero.storage;
 
-import com.espou.turnero.model.Resource;
-import com.espou.turnero.model.Task;
 import com.espou.turnero.model.TimeLine;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,8 +15,8 @@ public class ProviderDTO {
     private String id;
     private String name;
     private TimeLine timeline;
-    private Resource defaultResource;
-    private Task defaultTask;
+//    private Resource defaultResource;
+//    private Task defaultTask;
     @Indexed(unique = true)
     private String internalId;
 }

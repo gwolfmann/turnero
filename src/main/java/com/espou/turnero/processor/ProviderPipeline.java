@@ -109,11 +109,9 @@ public class ProviderPipeline {
         Map<String, String> vars = serverRequest.pathVariables();
         if (vars.containsKey("internalId")) {
             String internalId = vars.get("internalId");
-            if (serverRequest.method().equals(HttpMethod.DELETE)) {
+            if (serverRequest.method().equals(HttpMethod.DELETE)){
                 logger.info("Received DELETE request for provider with internalId: {}", internalId);
-                return serverRequest.bodyToMono(Provider.class)
-                        .flatMap(x -> Mono.just(ProviderMapper.toDto(x)))
-                        .flatMap(x -> providerService.deleteProvider(x, internalId));
+                return providerService.deleteProvider(internalId);
             } else {
                 logger.info("Received PUT request for provider with internalId: {}", internalId);
                 return serverRequest.bodyToMono(Provider.class)
@@ -129,6 +127,9 @@ public class ProviderPipeline {
     }
 
     private Mono<ServerRequest> validateBody(ServerRequest serverRequest) {
+        if (serverRequest.method().equals(HttpMethod.DELETE)) {
+            return Mono.just(serverRequest);
+        }
         return serverRequest.bodyToMono(ProviderDTO.class)
                 .flatMap(providerDTO -> {
                     if (isProviderValid(providerDTO)) {
@@ -143,8 +144,8 @@ public class ProviderPipeline {
     private boolean isProviderValid(ProviderDTO provider) {
         return provider.getName() != null && !provider.getName().isEmpty()
                 && provider.getTimeline() != null
-                && provider.getDefaultResource() != null
-                && provider.getDefaultTask() != null
+                //&& provider.getDefaultResource() != null
+                //&& provider.getDefaultTask() != null
                 && provider.getInternalId() != null && !provider.getInternalId().isEmpty();
     }
 

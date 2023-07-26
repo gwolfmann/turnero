@@ -9,4 +9,5 @@ import reactor.core.publisher.Mono;
 public interface ProviderRepository extends ReactiveMongoRepository<ProviderDTO, String> {
     @Query("{ internalId: ?0 }")
     Mono<ProviderDTO> findByInternalId(String internalId);
+    Mono<ProviderDTO> deleteByInternalId(String internalId);
 }

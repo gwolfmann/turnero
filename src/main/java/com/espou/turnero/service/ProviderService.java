@@ -42,14 +42,10 @@ public class ProviderService {
                 .switchIfEmpty(Mono.error(new RuntimeException("Not found to update Provider by internalId " + internalId)));
     }
 
-    public Mono<ProviderDTO> deleteProvider(ProviderDTO providerDTO, String internalId) {
-        return providerRepository.findByInternalId(internalId)
-                .flatMap(existingProvider -> updateId(providerDTO, existingProvider.getId()))
-                .flatMap(providerRepository::delete)
-                .thenReturn(representsDeleted(providerDTO))
+    public Mono<ProviderDTO> deleteProvider(String internalId) {
+        return providerRepository.deleteByInternalId(internalId)
                 .switchIfEmpty(Mono.error(new RuntimeException("Not found to update Provider by internalId " + internalId)));
     }
-
     private Mono<ProviderDTO> updateId(ProviderDTO providerDTO, String id) {
         providerDTO.setId(id);
         return Mono.just(providerDTO);
