@@ -4,18 +4,23 @@ import com.espou.turnero.storage.MeetDTO;
 import com.espou.turnero.storage.MeetDTOLookup;
 import com.espou.turnero.storage.MeetLookupRepository;
 import com.espou.turnero.storage.MeetRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class MeetService {
     private final MeetRepository meetRepository;
     private final MeetLookupRepository meetLookupRepository;
+    private final Logger logger = LoggerFactory.getLogger(MeetService.class);
 
     @Autowired
     public MeetService(MeetRepository meetRepository,MeetLookupRepository meetLookupRepository) {
@@ -38,9 +43,16 @@ public class MeetService {
     }
 
     public Mono<MeetDTO> getMeetByInternalId(String internalId) {
+        logger.info("Received GET request for meet with internalId: {}", internalId);
         return meetRepository.findByInternalId(internalId)
                 .switchIfEmpty(Mono.error(new RuntimeException("Meet not found with internalId: " + internalId)));
     }
+
+    public Mono<List<MeetDTO>> getMeetsByResourceAndProviderAndDate(String resourceInternalId, String providerInternalId, LocalDate date) {
+        return meetRepository.findByResourceInternalIdAndProviderInternalIdAndDate(resourceInternalId, providerInternalId, date)
+                .collectList();
+    }
+
 
     public Mono<MeetDTO> createMeet(MeetDTO meetDTO) {
         return meetRepository.save(meetDTO);

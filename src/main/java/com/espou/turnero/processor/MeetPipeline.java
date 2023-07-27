@@ -11,10 +11,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,6 +27,7 @@ import java.util.stream.Collectors;
 public class MeetPipeline {
     private final Pipeline<MeetDTO, Meet, Meet> singleReadPipeline;
     private final Pipeline<List<MeetDTOLookup>, List<Meet>, List<Meet>> listReadPipeline;
+    private final Pipeline<List<MeetDTO>, List<MeetDTO>, List<MeetDTO>> listForaDatePipeline;
     private final Pipeline<MeetDTO, MeetDTO, MeetDTO> singleWritePipeline;
 
     private final Logger logger = LoggerFactory.getLogger(MeetPipeline.class);
@@ -45,6 +49,7 @@ public class MeetPipeline {
         this.receiverService = receiverService;
         singleReadPipeline = singleReadPipelineBuilder();
         listReadPipeline = listReadPipelineBuilder();
+        listForaDatePipeline = listForaDatePipelineBuilder();
         singleWritePipeline = writePipelineBuilder();
     }
 
@@ -56,6 +61,11 @@ public class MeetPipeline {
     public Mono<ServerResponse> getMeetSingle(ServerRequest serverRequest) {
         return singleReadPipeline.executeToServerResponse(serverRequest);
     }
+
+    public Mono<ServerResponse> getMeetForDate(ServerRequest serverRequest) {
+        return listForaDatePipeline.executeToServerResponse(serverRequest);
+    }
+
 
     public Mono<ServerResponse> createMeet(ServerRequest serverRequest) {
         return singleWritePipeline.executeToServerResponse(serverRequest);
@@ -97,6 +107,17 @@ public class MeetPipeline {
                 .build();
     }
 
+    private Pipeline<List<MeetDTO>, List<MeetDTO>, List<MeetDTO>> listForaDatePipelineBuilder() {
+        return Pipeline.<List<MeetDTO>, List<MeetDTO>, List<MeetDTO>>builder()
+                .validateRequest(Pipeline::noOp)
+                .validateBody(Pipeline::noOp)
+                .storageOp(this::getListForDate)
+                .boProcessor(Pipeline::noOp)
+                .presenter(Pipeline::noOp)
+                .handleErrorResponse(Mono::error)
+                .build();
+    }
+
     private Pipeline<MeetDTO, MeetDTO, MeetDTO> writePipelineBuilder() {
         return Pipeline.<MeetDTO, MeetDTO, MeetDTO>builder()
                 .validateRequest(Pipeline::noOp)
@@ -120,6 +141,33 @@ public class MeetPipeline {
         }
         return Mono.empty();
     }
+    private Mono<List<MeetDTO>> getListForDate(ServerRequest serverRequest) {
+        MultiValueMap<String, String> allHeaders = serverRequest.queryParams();
+        List<String> providers = allHeaders.get("provider");
+        List<String> resources = allHeaders.get("resource");
+        List<String> dates = allHeaders.get("date");
+        String provider = null;
+        String resource = null;
+        LocalDate dateOfQuery = null;
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        if (providers.size()>0) {
+            provider = providers.get(0);
+        } else {
+            return Mono.error(new RuntimeException("No header provider"));
+        }
+        if (resources.size()>0) {
+            resource = resources.get(0);
+        } else {
+            return Mono.error(new RuntimeException("No header resource"));
+        }
+        if (dates.size()>0) {
+            dateOfQuery = LocalDate.parse(dates.get(0), dateTimeFormatter);
+        } else {
+            return Mono.error(new RuntimeException("No header date"));
+        }
+        logger.info("Received GET request for meet for resource {}, provider {} and date  {}", resource,provider,dateOfQuery.format(dateTimeFormatter));
+        return meetService.getMeetsByResourceAndProviderAndDate(resource,provider,dateOfQuery);
+    }
 
     private Mono<MeetDTO> writeMeet(ServerRequest serverRequest) {
         Map<String, String> vars = serverRequest.pathVariables();
@@ -141,6 +189,9 @@ public class MeetPipeline {
         }
     }
     private Mono<ServerRequest> validateBody(ServerRequest serverRequest) {
+        if (serverRequest.method().equals(HttpMethod.DELETE)) {
+            return Mono.just(serverRequest);
+        }
         return serverRequest.bodyToMono(MeetDTO.class)
                 .flatMap(meetDTO -> {
                     if (isMeetValid(meetDTO)) {

@@ -24,6 +24,7 @@ public class MeetHandler {
         return route(GET("/meets"), meetPipeline::getMeetList)
                 .andRoute(GET("/meets/{id}"), meetPipeline::getMeetSingle)
                 .andRoute(GET("/meets/internal/{internalId}"), meetPipeline::getMeetSingle)
+                .andRoute(GET("/meetsForDate"), meetPipeline::getMeetForDate)
                 .andRoute(POST("/meets"), meetPipeline::createMeet)
                 .andRoute(PUT("/meets/{internalId}"), meetPipeline::updateMeet)
                 .andRoute(DELETE("/meets/{internalId}"), meetPipeline::deleteMeet);
