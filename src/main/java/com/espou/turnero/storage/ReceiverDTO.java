@@ -14,7 +14,7 @@ public class ReceiverDTO {
     private String id;
     private String name;
     private String affiliation;
-    private Integer identification;
+    private String identification;
     private String email;
     private String telephone;
     @Indexed(unique = true)
