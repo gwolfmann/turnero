@@ -20,5 +20,6 @@ public interface MeetRepository extends ReactiveMongoRepository<MeetDTO, String>
     Flux<MeetDTO> getMeetsWithProviders();
 
     Flux<MeetDTO> findByResourceInternalIdAndProviderInternalIdAndDate(String resourceInternalId, String providerInternalId, LocalDate date);
+    Mono<MeetDTO> deleteByInternalId(String internalId);
 
 }

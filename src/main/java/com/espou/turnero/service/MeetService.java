@@ -68,9 +68,7 @@ public class MeetService {
     }
 
     public Mono<MeetDTO> deleteMeet(String internalId) {
-        return meetRepository.findByInternalId(internalId)
-                .flatMap(existingMeet -> meetRepository.delete(existingMeet)
-                        .thenReturn(existingMeet))
+        return meetRepository.deleteByInternalId(internalId)
                 .switchIfEmpty(Mono.error(new RuntimeException("Meet not found with internalId: " + internalId)));
     }
 }

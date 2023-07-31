@@ -175,8 +175,7 @@ public class MeetPipeline {
             String internalId = vars.get("internalId");
             if (serverRequest.method().equals(HttpMethod.DELETE)) {
                 logger.info("Received DELETE request for meet with internalId: {}", internalId);
-                return serverRequest.bodyToMono(MeetDTO.class)
-                        .flatMap(x -> meetService.deleteMeet(internalId));
+                return meetService.deleteMeet(internalId);
             } else {
                 logger.info("Received PUT request for meet with internalId: {}", internalId);
                 return serverRequest.bodyToMono(MeetDTO.class)
