@@ -19,7 +19,8 @@ public class Meet {
     private LocalTime hour;
     private Integer duration;
     private String internalId;
-    private User lastUSer;
+    private User lastUser;
+    private String receiverName;
 
     @Builder
     public Meet(String id,
@@ -31,7 +32,8 @@ public class Meet {
             LocalTime hour,
             Integer duration,
             String internalId,
-            User lastUSer){
+            User lastUser,
+            String receiverName){
        this.id=id;
        this.resource=Resource.builder().internalId(resourceInternalId).build();
        this.provider=Provider.builder().internalId(providerInternalId).build();
@@ -41,7 +43,7 @@ public class Meet {
        this.hour=hour;
        this.duration=duration;
        this.internalId=internalId;
-       this.lastUSer=lastUSer;
+       this.lastUser = lastUser;
     }
     public LocalTime endingTime() {
         return hour.plusMinutes(duration);

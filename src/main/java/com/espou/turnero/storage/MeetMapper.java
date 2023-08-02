@@ -14,7 +14,8 @@ public class MeetMapper {
             meet.getHour(),
             meet.getDuration(),
             meet.getInternalId(),
-            meet.getLastUSer()
+            meet.getLastUser(),
+            meet.getReceiverName()
         );
     }
 
@@ -29,7 +30,8 @@ public class MeetMapper {
             meetDto.getHour(),
             meetDto.getDuration(),
             meetDto.getInternalId(),
-            meetDto.getLastUser()
+            meetDto.getLastUser(),
+            meetDto.getReceiverName()
         );
     }
     public static Meet toEntity(MeetDTOLookup meetDTOLookup) {
@@ -43,7 +45,8 @@ public class MeetMapper {
                 meetDTOLookup.getHour(),
                 meetDTOLookup.getDuration(),
                 meetDTOLookup.getInternalId(),
-                meetDTOLookup.getLastUser()
+                meetDTOLookup.getLastUser(),
+                meetDTOLookup.getReceiver().getName()
         );
     }
 }
