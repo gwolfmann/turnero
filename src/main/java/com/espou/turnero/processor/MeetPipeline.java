@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -146,26 +147,25 @@ public class MeetPipeline {
         List<String> providers = allHeaders.get("provider");
         List<String> resources = allHeaders.get("resource");
         List<String> dates = allHeaders.get("date");
-        String provider = null;
-        String resource = null;
-        LocalDate dateOfQuery = null;
+        Optional<String> provider;
+        Optional<String> resource;
+        LocalDate dateOfQuery ;
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        if (providers.size()>0) {
-            provider = providers.get(0);
+        if (providers==null) {
+            provider = Optional.empty();
         } else {
-            return Mono.error(new RuntimeException("No header provider"));
+            provider = Optional.of(providers.get(0));
         }
-        if (resources.size()>0) {
-            resource = resources.get(0);
+        if (resources==null) {
+            resource = Optional.empty();
         } else {
-            return Mono.error(new RuntimeException("No header resource"));
+            resource = Optional.of(resources.get(0));
         }
         if (dates.size()>0) {
             dateOfQuery = LocalDate.parse(dates.get(0), dateTimeFormatter);
         } else {
             return Mono.error(new RuntimeException("No header date"));
         }
-        logger.info("Received GET request for meet for resource {}, provider {} and date  {}", resource,provider,dateOfQuery.format(dateTimeFormatter));
         return meetService.getMeetsByResourceAndProviderAndDate(resource,provider,dateOfQuery);
     }
 

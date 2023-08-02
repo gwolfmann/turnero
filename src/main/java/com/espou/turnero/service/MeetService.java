@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,9 +49,22 @@ public class MeetService {
                 .switchIfEmpty(Mono.error(new RuntimeException("Meet not found with internalId: " + internalId)));
     }
 
-    public Mono<List<MeetDTO>> getMeetsByResourceAndProviderAndDate(String resourceInternalId, String providerInternalId, LocalDate date) {
-        return meetRepository.findByResourceInternalIdAndProviderInternalIdAndDate(resourceInternalId, providerInternalId, date)
-                .collectList();
+    public Mono<List<MeetDTO>> getMeetsByResourceAndProviderAndDate(Optional<String> resourceInternalId, Optional<String> providerInternalId, LocalDate date) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        if (resourceInternalId.isEmpty() && providerInternalId.isEmpty()) {
+            logger.info("Received GET request for meet for date {}", date.format(dateTimeFormatter));
+            return meetRepository.findByDate(date).collectList();
+        }
+        if (providerInternalId.isEmpty()) {
+            logger.info("Received GET request for meet for resource {} and date {}", resourceInternalId.get(),date.format(dateTimeFormatter));
+            return meetRepository.findByResourceInternalIdAndDate(resourceInternalId.get(),date).collectList();
+        }
+        if (resourceInternalId.isEmpty()) {
+            logger.info("Received GET request for meet for provider {} and date {}", providerInternalId.get(),date.format(dateTimeFormatter));
+            return meetRepository.findByProviderInternalIdAndDate(providerInternalId.get(), date).collectList();
+        }
+        logger.info("Received GET request for meet for resource {}, provider {} and date {}", resourceInternalId.get(),providerInternalId.get(),date.format(dateTimeFormatter));
+        return meetRepository.findByResourceInternalIdAndProviderInternalIdAndDate(resourceInternalId.get(), providerInternalId.get(), date).collectList();
     }
 
 
