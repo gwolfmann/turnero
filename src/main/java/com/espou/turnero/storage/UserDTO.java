@@ -1,5 +1,6 @@
 package com.espou.turnero.storage;
 
+import com.espou.turnero.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,4 +21,5 @@ public class UserDTO {
     private String telephone;
     @Indexed(unique = true)
     private String internalId;
+    private User.Profile profile;
 }

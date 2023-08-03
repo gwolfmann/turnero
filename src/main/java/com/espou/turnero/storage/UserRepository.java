@@ -10,6 +10,5 @@ public interface UserRepository extends ReactiveMongoRepository<UserDTO, String>
     @Query("{ internalId: ?0 }")
     Mono<UserDTO> findByInternalId(String internalId);
 
-    //todo implementar los deletes
     Mono<UserDTO> deleteByInternalId(String internalId);
 }
