@@ -1,5 +1,6 @@
 package com.espou.turnero.authentication;
 
+import com.espou.turnero.storage.UserDTO;
 import com.espou.turnero.storage.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,17 +18,28 @@ public class AuthenticationService {
         this.jwtUtil = jwtUtil;
     }
 
-    public Mono<String> authenticate(String username, String password) {
+    public Mono<AuthenticationResponse> authenticate(String username, String password) {
         return userRepository.findByInternalId(username)
-                .filter(user -> passwordMatches(password, user.getPassw()))
-                .map(user -> jwtUtil.generateToken(user.getInternalId()))
-                .switchIfEmpty(Mono.error(new RuntimeException("Invalid username or password")));
+            .flatMap(user -> passwordMatches(password, user))
+            .flatMap(user-> Mono.just(AuthenticationResponse.builder()
+                .token(getMapToken(user.getInternalId()))
+                .profile(user.getProfile())
+                .internalId(user.getInternalId())
+                .build()));
     }
 
-    private boolean passwordMatches(String rawPassword, String hashedPassword) {
+    private Mono<UserDTO> passwordMatches(String rawPassword, UserDTO userInternalId ) {
         // Implement password hashing and matching logic here
         // You can use libraries like BCrypt to securely hash and match passwords
         // For simplicity, we are skipping password hashing in this example
-        return rawPassword.equals(hashedPassword);
+        if (rawPassword.equals(userInternalId.getPassw())) {
+            return Mono.just(userInternalId);
+        };
+        return Mono.error(new RuntimeException("Do not match passwords"));
+    }
+
+    private String getMapToken(String internalId){
+        return jwtUtil.generateToken(internalId);
+        //return Collections.singletonMap("token", tk);
     }
 }

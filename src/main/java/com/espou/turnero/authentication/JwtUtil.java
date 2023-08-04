@@ -1,8 +1,11 @@
 package com.espou.turnero.authentication;
 
+import com.espou.turnero.service.MeetService;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -16,10 +19,12 @@ public class JwtUtil {
 
     @Value("${jwt.expiration}")
     private long expirationMs; // Expiration time in milliseconds
+    private final Logger logger = LoggerFactory.getLogger(MeetService.class);
 
     public String generateToken(String userId) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + expirationMs);
+        logger.info("Received login request for user: {}", userId);
         return Jwts.builder()
                 .setSubject(userId)
                 .setIssuedAt(now)

@@ -1,5 +1,6 @@
 package com.espou.turnero.controller;
 
+import com.espou.turnero.authentication.AuthenticationResponse;
 import com.espou.turnero.authentication.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -8,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-import java.util.Collections;
 import java.util.Map;
 
 @RestController
@@ -23,11 +23,9 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public Mono<Map<String, String>> login(@RequestBody Map<String, String> credentials) {
+    public Mono<AuthenticationResponse> login(@RequestBody Map<String, String> credentials) {
         String username = credentials.get("username");
         String password = credentials.get("password");
-
-        return authenticationService.authenticate(username, password)
-                .map(token -> Collections.singletonMap("token", token));
+        return authenticationService.authenticate(username, password);
     }
 }

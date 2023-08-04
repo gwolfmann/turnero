@@ -43,7 +43,6 @@ public class UserService {
     }
 
     public Mono<UserDTO> deleteUser(String internalId) {
-        //todo: reemplazar todos los deletes
         return userRepository.deleteByInternalId(internalId)
                 .switchIfEmpty(Mono.error(new RuntimeException("Not found to delete User by internalId " + internalId)));
     }
