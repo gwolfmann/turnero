@@ -1,5 +1,6 @@
 package com.espou.turnero.processor;
 
+import com.espou.turnero.authentication.JwtUtil;
 import com.espou.turnero.model.Provider;
 import com.espou.turnero.service.ProviderService;
 import com.espou.turnero.storage.ProviderDTO;
@@ -19,6 +20,9 @@ import java.util.stream.Collectors;
 
 @Component
 public class ProviderPipeline {
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     private final Pipeline<ProviderDTO, Provider, Provider> singleReadPipeline;
     private final Pipeline<List<ProviderDTO>, List<Provider>, List<Provider>> listReadPipeline;
@@ -61,7 +65,7 @@ public class ProviderPipeline {
 
     private Pipeline<List<ProviderDTO>, List<Provider>, List<Provider>> listReadPipelineBuilder() {
         return Pipeline.<List<ProviderDTO>, List<Provider>, List<Provider>>builder()
-                .validateRequest(Pipeline::noOp)
+                .validateRequest(this::validateJwtToken)
                 .validateBody(Pipeline::noOp)
                 .storageOp(x -> providerService.getAllProviders().collectList())
                 .boProcessor(this::mapListToProvider)
@@ -148,5 +152,28 @@ public class ProviderPipeline {
                 //&& provider.getDefaultTask() != null
                 && provider.getInternalId() != null && !provider.getInternalId().isEmpty();
     }
+
+    public Mono<ServerRequest> validateJwtToken(ServerRequest serverRequest) {
+        String token = getTokenFromServerRequest(serverRequest);
+        if (jwtUtil.validateToken(token)) {
+            // Token is valid, return the original ServerRequest
+            return Mono.just(serverRequest);
+        } else {
+            // Token is not valid, return an error
+            return Mono.error(new RuntimeException("Invalid JWT token"));
+        }
+    }
+
+    private String getTokenFromServerRequest(ServerRequest serverRequest) {
+        List<String> authHeaders = serverRequest.headers().header("Authorization");
+        if (!authHeaders.isEmpty()) {
+            String authHeader = authHeaders.get(0);
+            if (authHeader.startsWith("Bearer ")) {
+                return authHeader.substring(7);
+            }
+        }
+        return null;
+    }
+
 
 }
