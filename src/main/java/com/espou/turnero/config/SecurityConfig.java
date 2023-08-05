@@ -18,7 +18,12 @@ public class SecurityConfig {
                         exchanges
                                 .pathMatchers("/public/**").permitAll()
                                 .pathMatchers(HttpMethod.POST, "/api/auth/login").permitAll() // Allow login endpoint
-                                .pathMatchers(HttpMethod.GET, "/providers").permitAll() // Allow GET requests to /providers
+                                .pathMatchers( "/providers").permitAll() // Allow GET requests to /providers
+                                .pathMatchers( "/resources").permitAll() // Allow GET requests to /providers
+                                .pathMatchers( "/receivers").permitAll() // Allow GET requests to /providers
+                                .pathMatchers( "/tasks").permitAll() // Allow GET requests to /providers
+                                .pathMatchers( "/users").permitAll() // Allow GET requests to /providers
+                                .pathMatchers( "/meets").permitAll() // Allow GET requests to /providers
                                 .anyExchange().authenticated()
                 )
                 .addFilterAt(new JwtAuthenticationWebFilter(new JwtAuthenticationManager()), SecurityWebFiltersOrder.AUTHENTICATION)
