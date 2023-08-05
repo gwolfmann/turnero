@@ -1,5 +1,6 @@
 package com.espou.turnero.authentication;
 
+import com.espou.turnero.exceptions.InvalidPassException;
 import com.espou.turnero.storage.UserDTO;
 import com.espou.turnero.storage.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,7 @@ public class AuthenticationService {
         if (rawPassword.equals(userInternalId.getPassw())) {
             return Mono.just(userInternalId);
         }
-        return Mono.error(new RuntimeException("Do not match passwords"));
+        return Mono.error(new InvalidPassException("Do not match passwords"));
     }
 
     private String getMapToken(String internalId){

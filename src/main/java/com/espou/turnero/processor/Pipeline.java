@@ -1,5 +1,6 @@
 package com.espou.turnero.processor;
 
+import com.espou.turnero.exceptions.TurneroException;
 import com.espou.turnero.response.CustomBadResponse;
 import com.espou.turnero.response.CustomResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -49,15 +50,25 @@ public class Pipeline<RAW,BO,DTO> {
                 .responseCount(getResponseCount(dto))
                 .build())
             .flatMap(x -> ServerResponse.ok().bodyValue(x))
-            .onErrorResume(ex ->
-                ServerResponse.ok().bodyValue(CustomBadResponse.builder()
-                    .message(ex.getMessage())
-                    .exceptionClassName(ex.getClass().getSimpleName())
-                    .lastCall(ex.getStackTrace()[0])
-                    .httpStatus(HttpStatus.OK)
-                    .requestPath(serverRequest.requestPath().toString())
-                    .build()));
-    }
+                .onErrorResume(ex -> {
+                    if (TurneroException.class.isAssignableFrom(ex.getClass())) {
+                        return ServerResponse.ok().bodyValue(CustomBadResponse.builder()
+                                .message(ex.getMessage())
+                                .exceptionClassName(ex.getClass().getSimpleName())
+                                .lastCall(ex.getStackTrace()[0])
+                                .httpStatus(HttpStatus.OK)
+                                .requestPath(serverRequest.requestPath().toString())
+                                .build());
+                    } else {
+                        return ServerResponse.badRequest().bodyValue(CustomBadResponse.builder()
+                                .message(ex.getMessage())
+                                .exceptionClassName(ex.getClass().getSimpleName())
+                                .lastCall(ex.getStackTrace()[0])
+                                .httpStatus(HttpStatus.BAD_REQUEST)
+                                .requestPath(serverRequest.requestPath().toString())
+                                .build());
+                    }
+                });    }
 
     private String getClassName(DTO dto){
         String className= dto.getClass().getSimpleName();
@@ -87,7 +98,6 @@ public class Pipeline<RAW,BO,DTO> {
     public static <T> String asJson(T value)  {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-
         String result="";
         try{
             result = objectMapper.writeValueAsString(value);
