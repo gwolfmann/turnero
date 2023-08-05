@@ -18,9 +18,9 @@ public class AuthenticationService {
         this.jwtUtil = jwtUtil;
     }
 
-    public Mono<AuthenticationResponse> authenticate(String username, String password) {
-        return userRepository.findByInternalId(username)
-            .flatMap(user -> passwordMatches(password, user))
+    public Mono<AuthenticationResponse> authenticate(LoginCredentials loginCredentials){
+        return userRepository.findByInternalId(loginCredentials.getUsername())
+            .flatMap(user -> passwordMatches(loginCredentials.getPassword(), user))
             .flatMap(user-> Mono.just(AuthenticationResponse.builder()
                 .token(getMapToken(user.getInternalId()))
                 .profile(user.getProfile())
@@ -34,7 +34,7 @@ public class AuthenticationService {
         // For simplicity, we are skipping password hashing in this example
         if (rawPassword.equals(userInternalId.getPassw())) {
             return Mono.just(userInternalId);
-        };
+        }
         return Mono.error(new RuntimeException("Do not match passwords"));
     }
 

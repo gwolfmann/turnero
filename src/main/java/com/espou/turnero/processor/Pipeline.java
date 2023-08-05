@@ -50,7 +50,7 @@ public class Pipeline<RAW,BO,DTO> {
                 .build())
             .flatMap(x -> ServerResponse.ok().bodyValue(x))
             .onErrorResume(ex ->
-                ServerResponse.badRequest().bodyValue(CustomBadResponse.builder()
+                ServerResponse.ok().bodyValue(CustomBadResponse.builder()
                     .message(ex.getMessage())
                     .exceptionClassName(ex.getClass().getSimpleName())
                     .lastCall(ex.getStackTrace()[0])
