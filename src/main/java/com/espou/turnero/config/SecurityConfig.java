@@ -1,4 +1,5 @@
 package com.espou.turnero.config;
+
 import com.espou.turnero.authentication.JwtAuthenticationManager;
 import com.espou.turnero.authentication.JwtAuthenticationWebFilter;
 import org.springframework.context.annotation.Bean;
@@ -7,6 +8,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 @Configuration
 public class SecurityConfig {
@@ -18,17 +22,33 @@ public class SecurityConfig {
                         exchanges
                                 .pathMatchers("/public/**").permitAll()
                                 .pathMatchers(HttpMethod.POST, "/api/auth/login").permitAll() // Allow login endpoint
-                                .pathMatchers( "/providers").permitAll() // Allow GET requests to /providers
-                                .pathMatchers( "/resources").permitAll() // Allow GET requests to /providers
-                                .pathMatchers( "/receivers").permitAll() // Allow GET requests to /providers
-                                .pathMatchers( "/tasks").permitAll() // Allow GET requests to /providers
-                                .pathMatchers( "/users").permitAll() // Allow GET requests to /providers
-                                .pathMatchers( "/meets").permitAll() // Allow GET requests to /providers
+                                .pathMatchers("/providers").permitAll()
+                                .pathMatchers("/resources").permitAll()
+                                .pathMatchers("/receivers").permitAll()
+                                .pathMatchers("/tasks").permitAll()
+                                .pathMatchers("/users").permitAll()
+                                .pathMatchers("/meets").permitAll()
                                 .anyExchange().authenticated()
                 )
-                .addFilterAt(new JwtAuthenticationWebFilter(new JwtAuthenticationManager()), SecurityWebFiltersOrder.AUTHENTICATION)
                 .csrf(csrf -> csrf.disable());
 
-        return http.build();
+        return http
+                .addFilterBefore(corsWebFilter(), SecurityWebFiltersOrder.CORS) // Apply CORS filter first
+                .addFilterAt(new JwtAuthenticationWebFilter(new JwtAuthenticationManager()), SecurityWebFiltersOrder.AUTHENTICATION)
+                .build();
+    }
+
+    @Bean
+    public CorsWebFilter corsWebFilter() {
+        CorsConfiguration corsConfig = new CorsConfiguration();
+        corsConfig.addAllowedOrigin("http://localhost:4200"); // Add your frontend's origin
+        corsConfig.addAllowedMethod("*"); // Allow all HTTP methods
+        corsConfig.addAllowedHeader("*"); // Allow all headers
+        corsConfig.setAllowCredentials(true); // Allow sending cookies
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfig);
+
+        return new CorsWebFilter(source);
     }
 }
