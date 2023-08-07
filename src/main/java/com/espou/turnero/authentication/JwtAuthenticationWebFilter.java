@@ -9,8 +9,4 @@ public class JwtAuthenticationWebFilter extends AuthenticationWebFilter {
         super(authenticationManager);
     }
 
-//    @Override
-//    protected Mono<Void> onAuthenticationSuccess(Authentication authentication, ServerWebExchange exchange) {
-//        return ReactiveSecurityContextHolder.clearContext().then(super.onAuthenticationSuccess(authentication, exchange));
-//    }
 }

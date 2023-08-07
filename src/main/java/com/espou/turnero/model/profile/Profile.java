@@ -1,6 +1,5 @@
 package com.espou.turnero.model.profile;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
@@ -22,13 +21,13 @@ public enum Profile {
     public String getValue() {
         return value;
     }
-    @JsonCreator
-    public static Profile fromValue(String value) {
-        for (Profile profile : Profile.values()) {
-            if (profile.value.equalsIgnoreCase(value)) {
-                return profile;
-            }
-        }
-        throw new IllegalArgumentException("Invalid Profile value: " + value);
-    }
+//    @JsonCreator
+//    public static Profile fromValue(String value) {
+//        for (Profile profile : Profile.values()) {
+//            if (profile.value.equalsIgnoreCase(value)) {
+//                return profile;
+//            }
+//        }
+//        throw new IllegalArgumentException("Invalid Profile value: " + value);
+//    }
 }

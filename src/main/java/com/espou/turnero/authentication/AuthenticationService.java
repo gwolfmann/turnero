@@ -41,6 +41,5 @@ public class AuthenticationService {
 
     private String getMapToken(String internalId){
         return jwtUtil.generateToken(internalId);
-        //return Collections.singletonMap("token", tk);
     }
 }
