@@ -1,5 +1,6 @@
 package com.espou.turnero.processor;
 
+import com.espou.turnero.authentication.JwtValidationUtil;
 import com.espou.turnero.model.User;
 import com.espou.turnero.service.UserService;
 import com.espou.turnero.storage.UserDTO;
@@ -27,10 +28,12 @@ public class UserPipeline {
     private final Logger logger = LoggerFactory.getLogger(UserPipeline.class);
 
     private final UserService userService;
+    private final JwtValidationUtil jwtValidationUtil;
 
     @Autowired
-    public UserPipeline(UserService userService) {
+    public UserPipeline(UserService userService, JwtValidationUtil jwtValidationUtil) {
         this.userService = userService;
+        this.jwtValidationUtil = jwtValidationUtil;
         singleReadPipeline = singleReadPipelineBuilder();
         listReadPipeline = listReadPipelineBuilder();
         singleWritePipeline = writePipelineBuilder();
@@ -61,7 +64,7 @@ public class UserPipeline {
 
     private Pipeline<List<UserDTO>, List<User>, List<User>> listReadPipelineBuilder() {
         return Pipeline.<List<UserDTO>, List<User>, List<User>>builder()
-                .validateRequest(Pipeline::noOp)
+                .validateRequest(jwtValidationUtil::validateJwtToken)
                 .validateBody(Pipeline::noOp)
                 .storageOp(x -> userService.getAllUsers().collectList())
                 .boProcessor(this::mapListToUser)
@@ -72,7 +75,7 @@ public class UserPipeline {
 
     private Pipeline<UserDTO, User, User> singleReadPipelineBuilder() {
         return Pipeline.<UserDTO, User, User>builder()
-                .validateRequest(Pipeline::noOp)
+                .validateRequest(jwtValidationUtil::validateJwtToken)
                 .validateBody(Pipeline::noOp)
                 .storageOp(this::getSingleUser)
                 .boProcessor(x -> Mono.just(UserMapper.toEntity(x)))
@@ -83,7 +86,7 @@ public class UserPipeline {
 
     private Pipeline<UserDTO, UserDTO, UserDTO> writePipelineBuilder() {
         return Pipeline.<UserDTO, UserDTO, UserDTO>builder()
-                .validateRequest(Pipeline::noOp)
+                .validateRequest(jwtValidationUtil::validateJwtToken)
                 .validateBody(this::validateBody)
                 .storageOp(this::writeUser)
                 .boProcessor(Pipeline::noOp)

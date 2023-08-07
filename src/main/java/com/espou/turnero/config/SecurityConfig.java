@@ -28,6 +28,7 @@ public class SecurityConfig {
                     .pathMatchers("/tasks/**").permitAll()
                     .pathMatchers("/users/**").permitAll()
                     .pathMatchers("/meets/**").permitAll()
+                    .pathMatchers( HttpMethod.GET,"/meetsForDate").permitAll()
                     .anyExchange().authenticated()
             )
             .csrf(csrf -> csrf.disable());

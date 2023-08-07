@@ -1,5 +1,6 @@
 package com.espou.turnero.processor;
 
+import com.espou.turnero.authentication.JwtValidationUtil;
 import com.espou.turnero.model.Receiver;
 import com.espou.turnero.service.ReceiverService;
 import com.espou.turnero.storage.ReceiverDTO;
@@ -26,10 +27,12 @@ public class ReceiverPipeline {
     private final Logger logger = LoggerFactory.getLogger(ReceiverPipeline.class);
 
     private final ReceiverService receiverService;
+    private final JwtValidationUtil jwtValidationUtil;
 
     @Autowired
-    public ReceiverPipeline(ReceiverService receiverService) {
+    public ReceiverPipeline(ReceiverService receiverService, JwtValidationUtil jwtValidationUtil) {
         this.receiverService = receiverService;
+        this.jwtValidationUtil = jwtValidationUtil;
         singleReadPipeline = singleReadPipelineBuilder();
         listReadPipeline = listReadPipelineBuilder();
         singleWritePipeline = writePipelineBuilder();
@@ -60,7 +63,7 @@ public class ReceiverPipeline {
 
     private Pipeline<List<ReceiverDTO>, List<Receiver>, List<Receiver>> listReadPipelineBuilder() {
         return Pipeline.<List<ReceiverDTO>, List<Receiver>, List<Receiver>>builder()
-                .validateRequest(Pipeline::noOp)
+                .validateRequest(jwtValidationUtil::validateJwtToken)
                 .validateBody(Pipeline::noOp)
                 .storageOp(x -> receiverService.getAllReceivers().collectList())
                 .boProcessor(this::mapListToReceiver)
@@ -71,7 +74,7 @@ public class ReceiverPipeline {
 
     private Pipeline<ReceiverDTO, Receiver, Receiver> singleReadPipelineBuilder() {
         return Pipeline.<ReceiverDTO, Receiver, Receiver>builder()
-                .validateRequest(Pipeline::noOp)
+                .validateRequest(jwtValidationUtil::validateJwtToken)
                 .validateBody(Pipeline::noOp)
                 .storageOp(this::getSingleReceiver)
                 .boProcessor(x -> Mono.just(ReceiverMapper.toEntity(x)))
@@ -82,7 +85,7 @@ public class ReceiverPipeline {
 
     private Pipeline<ReceiverDTO, ReceiverDTO, ReceiverDTO> writePipelineBuilder() {
         return Pipeline.<ReceiverDTO, ReceiverDTO, ReceiverDTO>builder()
-                .validateRequest(Pipeline::noOp)
+                .validateRequest(jwtValidationUtil::validateJwtToken)
                 .validateBody(this::validateBody)
                 .storageOp(this::writeReceiver)
                 .boProcessor(Pipeline::noOp)

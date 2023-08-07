@@ -1,6 +1,7 @@
 package com.espou.turnero.processor;
 
 
+import com.espou.turnero.authentication.JwtValidationUtil;
 import com.espou.turnero.model.Resource;
 import com.espou.turnero.service.ResourceService;
 import com.espou.turnero.storage.ResourceDTO;
@@ -28,9 +29,11 @@ public class ResourcePipeline {
     private final Logger logger = LoggerFactory.getLogger(ResourcePipeline.class);
 
     private final ResourceService resourceService;
+    private final JwtValidationUtil jwtValidationUtil;
     @Autowired
-    public ResourcePipeline(ResourceService resourceService){
+    public ResourcePipeline(ResourceService resourceService, JwtValidationUtil jwtValidationUtil){
         this.resourceService = resourceService;
+        this.jwtValidationUtil = jwtValidationUtil;
         singleReadPipeline = singleReadPipelineBuilder();
         listReadPipeline = listReadPipelineBuilder();
         singleWritePipeline = writePipelineBuilder();
@@ -60,7 +63,7 @@ public class ResourcePipeline {
 
     private Pipeline<List<ResourceDTO>, List<Resource>,List<Resource>> listReadPipelineBuilder(){
         return Pipeline.<List<ResourceDTO>, List<Resource>,List<Resource>>builder()
-                .validateRequest(Pipeline::noOp)
+                .validateRequest(jwtValidationUtil::validateJwtToken)
                 .validateBody(Pipeline::noOp)
                 .storageOp(x -> resourceService.getAllResources().collectList())
                 .boProcessor(this::mapListToResource)
@@ -71,7 +74,7 @@ public class ResourcePipeline {
 
     private Pipeline<ResourceDTO, Resource, Resource> singleReadPipelineBuilder(){
         return Pipeline.<ResourceDTO, Resource, Resource>builder()
-                .validateRequest(Pipeline::noOp)
+                .validateRequest(jwtValidationUtil::validateJwtToken)
                 .validateBody(Pipeline::noOp)
                 .storageOp(this::getSingleResource)
                 .boProcessor(x -> Mono.just(ResourceMapper.toEntity(x)))
@@ -82,7 +85,7 @@ public class ResourcePipeline {
 
     private Pipeline<ResourceDTO,ResourceDTO, ResourceDTO> writePipelineBuilder(){
         return Pipeline.<ResourceDTO,ResourceDTO, ResourceDTO>builder()
-                .validateRequest(Pipeline::noOp)
+                .validateRequest(jwtValidationUtil::validateJwtToken)
                 .validateBody(this::validateBody)
                 .storageOp(this::writeResource)
                 .boProcessor(Pipeline::noOp)

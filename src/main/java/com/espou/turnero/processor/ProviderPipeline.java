@@ -1,6 +1,6 @@
 package com.espou.turnero.processor;
 
-import com.espou.turnero.authentication.JwtUtil;
+import com.espou.turnero.authentication.JwtValidationUtil;
 import com.espou.turnero.model.Provider;
 import com.espou.turnero.service.ProviderService;
 import com.espou.turnero.storage.ProviderDTO;
@@ -21,9 +21,6 @@ import java.util.stream.Collectors;
 @Component
 public class ProviderPipeline {
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
     private final Pipeline<ProviderDTO, Provider, Provider> singleReadPipeline;
     private final Pipeline<List<ProviderDTO>, List<Provider>, List<Provider>> listReadPipeline;
     private final Pipeline<ProviderDTO, ProviderDTO, ProviderDTO> singleWritePipeline;
@@ -31,9 +28,11 @@ public class ProviderPipeline {
     private final Logger logger = LoggerFactory.getLogger(ProviderPipeline.class);
 
     private final ProviderService providerService;
+    private final JwtValidationUtil jwtValidationUtil;
 
     @Autowired
-    public ProviderPipeline(ProviderService providerService) {
+    public ProviderPipeline(JwtValidationUtil jwtValidationUtil, ProviderService providerService) {
+        this.jwtValidationUtil = jwtValidationUtil;
         this.providerService = providerService;
         singleReadPipeline = singleReadPipelineBuilder();
         listReadPipeline = listReadPipelineBuilder();
@@ -65,7 +64,7 @@ public class ProviderPipeline {
 
     private Pipeline<List<ProviderDTO>, List<Provider>, List<Provider>> listReadPipelineBuilder() {
         return Pipeline.<List<ProviderDTO>, List<Provider>, List<Provider>>builder()
-                .validateRequest(this::validateJwtToken)
+                .validateRequest(jwtValidationUtil::validateJwtToken)
                 .validateBody(Pipeline::noOp)
                 .storageOp(x -> providerService.getAllProviders().collectList())
                 .boProcessor(this::mapListToProvider)
@@ -76,7 +75,7 @@ public class ProviderPipeline {
 
     private Pipeline<ProviderDTO, Provider, Provider> singleReadPipelineBuilder() {
         return Pipeline.<ProviderDTO, Provider, Provider>builder()
-                .validateRequest(Pipeline::noOp)
+                .validateRequest(jwtValidationUtil::validateJwtToken)
                 .validateBody(Pipeline::noOp)
                 .storageOp(this::getSingleProvider)
                 .boProcessor(x -> Mono.just(ProviderMapper.toEntity(x)))
@@ -87,7 +86,7 @@ public class ProviderPipeline {
 
     private Pipeline<ProviderDTO, ProviderDTO, ProviderDTO> writePipelineBuilder() {
         return Pipeline.<ProviderDTO, ProviderDTO, ProviderDTO>builder()
-                .validateRequest(Pipeline::noOp)
+                .validateRequest(jwtValidationUtil::validateJwtToken)
                 .validateBody(this::validateBody)
                 .storageOp(this::writeProvider)
                 .boProcessor(Pipeline::noOp)
@@ -148,32 +147,7 @@ public class ProviderPipeline {
     private boolean isProviderValid(ProviderDTO provider) {
         return provider.getName() != null && !provider.getName().isEmpty()
                 && provider.getTimeline() != null
-                //&& provider.getDefaultResource() != null
-                //&& provider.getDefaultTask() != null
                 && provider.getInternalId() != null && !provider.getInternalId().isEmpty();
     }
-
-    public Mono<ServerRequest> validateJwtToken(ServerRequest serverRequest) {
-        String token = getTokenFromServerRequest(serverRequest);
-        if (jwtUtil.validateToken(token)) {
-            // Token is valid, return the original ServerRequest
-            return Mono.just(serverRequest);
-        } else {
-            // Token is not valid, return an error
-            return Mono.error(new RuntimeException("Invalid JWT token"));
-        }
-    }
-
-    private String getTokenFromServerRequest(ServerRequest serverRequest) {
-        List<String> authHeaders = serverRequest.headers().header("Authorization");
-        if (!authHeaders.isEmpty()) {
-            String authHeader = authHeaders.get(0);
-            if (authHeader.startsWith("Bearer ")) {
-                return authHeader.substring(7);
-            }
-        }
-        return null;
-    }
-
 
 }

@@ -1,5 +1,6 @@
 package com.espou.turnero.processor;
 
+import com.espou.turnero.authentication.JwtValidationUtil;
 import com.espou.turnero.model.Meet;
 import com.espou.turnero.service.MeetService;
 import com.espou.turnero.service.ProviderService;
@@ -37,17 +38,20 @@ public class MeetPipeline {
     private final ResourceService resourceService;
     private final ProviderService providerService;
     private final ReceiverService receiverService;
+    private final JwtValidationUtil jwtValidationUtil;
 
 
     @Autowired
     public MeetPipeline(MeetService meetService,
                         ResourceService resourceService,
                         ProviderService providerService,
-                        ReceiverService receiverService) {
+                        ReceiverService receiverService,
+                        JwtValidationUtil jwtValidationUtil) {
         this.meetService = meetService;
         this.resourceService = resourceService;
         this.providerService = providerService;
         this.receiverService = receiverService;
+        this.jwtValidationUtil = jwtValidationUtil;
         singleReadPipeline = singleReadPipelineBuilder();
         listReadPipeline = listReadPipelineBuilder();
         listForaDatePipeline = listForaDatePipelineBuilder();
@@ -88,7 +92,7 @@ public class MeetPipeline {
 
     private Pipeline<MeetDTO, Meet, Meet> singleReadPipelineBuilder() {
         return Pipeline.<MeetDTO, Meet, Meet>builder()
-                .validateRequest(Pipeline::noOp)
+                .validateRequest(jwtValidationUtil::validateJwtToken)
                 .validateBody(Pipeline::noOp)
                 .storageOp(this::getSingleMeet)
                 .boProcessor(this::getRelated)
@@ -99,7 +103,7 @@ public class MeetPipeline {
 
     private Pipeline<List<MeetDTOLookup>, List<Meet>, List<Meet>> listReadPipelineBuilder() {
         return Pipeline.<List<MeetDTOLookup>, List<Meet>, List<Meet>>builder()
-                .validateRequest(Pipeline::noOp)
+                .validateRequest(jwtValidationUtil::validateJwtToken)
                 .validateBody(Pipeline::noOp)
                 .storageOp(x -> meetService.getAllMeets(x).collectList())
                 .boProcessor(this::mapListToMeet)
@@ -110,7 +114,7 @@ public class MeetPipeline {
 
     private Pipeline<List<MeetDTO>, List<MeetDTO>, List<MeetDTO>> listForaDatePipelineBuilder() {
         return Pipeline.<List<MeetDTO>, List<MeetDTO>, List<MeetDTO>>builder()
-                .validateRequest(Pipeline::noOp)
+                .validateRequest(jwtValidationUtil::validateJwtToken)
                 .validateBody(Pipeline::noOp)
                 .storageOp(this::getListForDate)
                 .boProcessor(Pipeline::noOp)
@@ -121,7 +125,7 @@ public class MeetPipeline {
 
     private Pipeline<MeetDTO, MeetDTO, MeetDTO> writePipelineBuilder() {
         return Pipeline.<MeetDTO, MeetDTO, MeetDTO>builder()
-                .validateRequest(Pipeline::noOp)
+                .validateRequest(jwtValidationUtil::validateJwtToken)
                 .validateBody(this::validateBody)
                 .storageOp(this::writeMeet)
                 .boProcessor(Pipeline::noOp)
