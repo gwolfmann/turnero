@@ -18,24 +18,24 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
-                .authorizeExchange(exchanges ->
-                        exchanges
-                                .pathMatchers("/public/**").permitAll()
-                                .pathMatchers(HttpMethod.POST, "/api/auth/login").permitAll() // Allow login endpoint
-                                .pathMatchers("/providers").permitAll()
-                                .pathMatchers("/resources").permitAll()
-                                .pathMatchers("/receivers").permitAll()
-                                .pathMatchers("/tasks").permitAll()
-                                .pathMatchers("/users").permitAll()
-                                .pathMatchers("/meets").permitAll()
-                                .anyExchange().authenticated()
-                )
-                .csrf(csrf -> csrf.disable());
+            .authorizeExchange(exchanges ->
+                exchanges
+                    .pathMatchers("/public/**").permitAll()
+                    .pathMatchers(HttpMethod.POST, "/api/auth/login").permitAll() // Allow login endpoint
+                    .pathMatchers("/providers/**").permitAll()
+                    .pathMatchers("/resources/**").permitAll()
+                    .pathMatchers("/receivers/**").permitAll()
+                    .pathMatchers("/tasks/**").permitAll()
+                    .pathMatchers("/users/**").permitAll()
+                    .pathMatchers("/meets/**").permitAll()
+                    .anyExchange().authenticated()
+            )
+            .csrf(csrf -> csrf.disable());
 
         return http
-                .addFilterBefore(corsWebFilter(), SecurityWebFiltersOrder.CORS) // Apply CORS filter first
-                .addFilterAt(new JwtAuthenticationWebFilter(new JwtAuthenticationManager()), SecurityWebFiltersOrder.AUTHENTICATION)
-                .build();
+            .addFilterBefore(corsWebFilter(), SecurityWebFiltersOrder.CORS) // Apply CORS filter first
+            .addFilterAt(new JwtAuthenticationWebFilter(new JwtAuthenticationManager()), SecurityWebFiltersOrder.AUTHENTICATION)
+            .build();
     }
 
     @Bean
