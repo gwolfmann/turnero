@@ -29,6 +29,7 @@ public class SecurityConfig {
                     .pathMatchers("/users/**").permitAll()
                     .pathMatchers("/meets/**").permitAll()
                     .pathMatchers( HttpMethod.GET,"/meetsForDate").permitAll()
+                    .pathMatchers("/ping/**").permitAll() // Allow access to /ping
                     .anyExchange().authenticated()
             )
             .csrf(csrf -> csrf.disable());
