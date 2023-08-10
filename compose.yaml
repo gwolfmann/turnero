@@ -5,10 +5,11 @@ services:
       context: .
       dockerfile: Dockerfile  # Path to your Spring Boot app's Dockerfile
     ports:
-      - '8088:8080'
+      - '8080'  # Map container port 8081 to host port 8080
     environment:
-       SPRING_DATA_MONGODB_URI: mongodb://localhost:27017/turnero
-#      SPRING_DATA_MONGODB_HOST: host.docker.internal
-#      SPRING_DATA_MONGODB_PORT: 27017
+#      SPRING_PROFILES_ACTIVE: local  # Use 'cloud' for MongoDB Atlas
+#      SPRING_DATA_MONGODB_URI: mongodb://localhost:27017/turnero
+      SPRING_PROFILES_ACTIVE: cloud  # Use 'cloud' for MongoDB Atlas
+      SPRING_DATA_MONGODB_URI: mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@turnero.nmyvwbj.mongodb.net/?retryWrites=true&w=majority
 #      SPRING_DATA_MONGODB_DATABASE: 'turnero'
-#      SPRING_DATA_MONGODB_USERNAME: null
+
