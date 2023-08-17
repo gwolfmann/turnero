@@ -2,6 +2,7 @@ package com.espou.turnero.config;
 
 import com.espou.turnero.authentication.JwtAuthenticationManager;
 import com.espou.turnero.authentication.JwtAuthenticationWebFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,6 +15,8 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 @Configuration
 public class SecurityConfig {
+    @Value("${spring.profiles.active}")
+    private String activeProfile;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
@@ -42,8 +45,16 @@ public class SecurityConfig {
 
     @Bean
     public CorsWebFilter corsWebFilter() {
+        String allowedOrigin="*";
+
+        if ("local".equals(activeProfile)) {
+            allowedOrigin = "http://localhost:4200";
+        } else if ("cloud".equals(activeProfile)) {
+            allowedOrigin = "http://d32ix83j9g8sl2.cloudfront.net/";
+        }
+
         CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.addAllowedOrigin("http://localhost:4200"); // Add your frontend's origin
+        corsConfig.addAllowedOrigin(allowedOrigin); // Add your frontend's origin
         corsConfig.addAllowedMethod("*"); // Allow all HTTP methods
         corsConfig.addAllowedHeader("*"); // Allow all headers
         corsConfig.setAllowCredentials(true); // Allow sending cookies
